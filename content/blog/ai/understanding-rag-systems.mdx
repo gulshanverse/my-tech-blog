@@ -1,0 +1,75 @@
+---
+title: "Understanding RAG Systems: From Documents to Context-Aware AI"
+description: A practical mental model for retrieval-augmented generation, from document chunks to grounded answers.
+date: 2026-08-15
+updatedAt: 2026-08-15
+category: ai
+tags:
+  - Python
+  - LLM
+  - RAG
+  - AI Engineering
+author: Gulshan Kumar
+readingTime: 8 min read
+featured: true
+coverImage: /images/cover-rag.svg
+status: published
+seoTitle: Understanding RAG Systems from Documents to Context-Aware AI
+seoDescription: Learn the moving pieces of a retrieval-augmented generation system and the engineering trade-offs behind useful context.
+---
+
+Retrieval-augmented generation is often described as “search plus an LLM.” That is directionally right, but it hides the engineering decisions that make the result useful. A RAG system is a small information pipeline: it decides what to remember, what to retrieve, and how to present evidence to a model.
+
+## The problem RAG is trying to solve
+
+A language model can write fluently without knowing anything about a private document set. Fine-tuning can change behavior, but it is not always the right tool for facts that change frequently or need to be cited. RAG keeps the model general and supplies relevant context at request time.
+
+The important distinction is this: the model does not “know” the documents in the same way a database does. It receives a carefully selected slice of them and must use that slice well.
+
+## The retrieval loop
+
+A practical pipeline usually has five steps:
+
+1. Load source documents and keep their origin metadata.
+2. Split them into chunks that preserve enough local meaning.
+3. Create embeddings and store them in a vector index.
+4. Retrieve candidate chunks for a query.
+5. Give the model the candidates with a clear instruction to stay grounded.
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class Context:
+    text: str
+    source: str
+
+
+def build_prompt(question: str, contexts: list[Context]) -> str:
+    evidence = "\n\n".join(f"[{item.source}]\n{item.text}" for item in contexts)
+    return f"""Answer using only the evidence below.\n\n{evidence}\n\nQuestion: {question}"""
+```
+
+## Chunking is a product decision
+
+There is no universally correct chunk size. Small chunks improve precision but can lose the surrounding explanation. Large chunks carry more context but may dilute the signal and consume the context window.
+
+A useful first experiment is to hold the model and retrieval method constant while comparing a few chunk sizes. Keep a small evaluation set of real questions, then look at whether the retrieved passages contain enough information to answer—not just whether the final prose sounds confident.
+
+> **Tip:** Save the source filename, heading path, and character range with every chunk. When a result is wrong, provenance turns a vague failure into a debuggable one.
+
+## What good retrieval looks like
+
+A good answer is not proof that retrieval worked. It is worth inspecting the retrieved context directly. I like to ask three questions:
+
+- Did the right document make it into the candidate set?
+- Did the chunk contain the complete idea, rather than a dangling sentence?
+- Did the prompt make the model distinguish evidence from its own assumptions?
+
+These questions separate search quality from generation quality. They also create a better path for future evaluation.
+
+## The engineering lesson
+
+RAG rewards clear boundaries. Keep ingestion, retrieval, prompt construction, and generation as separate pieces so each can be measured. The most impressive demo is not the goal; the goal is a system whose failures explain themselves.
+
+That is the part I am still learning: the model gets the attention, but the boring data plumbing determines whether the attention is deserved.

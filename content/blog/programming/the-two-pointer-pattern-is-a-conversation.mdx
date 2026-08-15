@@ -1,0 +1,48 @@
+---
+title: The Two-Pointer Pattern Is a Conversation
+description: A visual way to understand a classic DSA pattern and the questions that make it reusable beyond one problem.
+date: 2026-07-31
+category: programming
+tags:
+  - Python
+  - C++
+  - Algorithms
+  - Problem Solving
+author: Gulshan Kumar
+readingTime: 5 min read
+featured: false
+coverImage: /images/cover-algorithms.svg
+status: published
+---
+
+The two-pointer pattern is often taught as a trick: put one pointer at each end and move them until they meet. The trick is useful, but the reusable idea is the conversation between the pointers.
+
+## Start with a question
+
+For a sorted array and a target sum, the left pointer asks whether the current pair is too small. The right pointer asks whether it is too large. Because the array is ordered, each answer rules out a region of possibilities.
+
+```python
+def pair_sum(values: list[int], target: int) -> tuple[int, int] | None:
+    left, right = 0, len(values) - 1
+    while left < right:
+        total = values[left] + values[right]
+        if total == target:
+            return values[left], values[right]
+        if total < target:
+            left += 1
+        else:
+            right -= 1
+    return None
+```
+
+## The invariant does the work
+
+The algorithm is not fast because two indexes look elegant. It is fast because the sorted invariant lets each move eliminate impossible pairs. Without that invariant, moving a pointer would be a guess.
+
+This is the question I now try to ask before memorizing a pattern: what property makes this movement safe?
+
+## When the pattern changes shape
+
+Two pointers can move in the same direction, start at different offsets, or represent a sliding window. The code changes, but the reasoning remains: define what each pointer means, state the invariant, and decide which move preserves it.
+
+That turns a pattern from a recipe into a small proof.

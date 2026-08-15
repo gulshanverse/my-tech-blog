@@ -1,0 +1,46 @@
+---
+title: Building a Learning Archive, Not a Content Machine
+description: Why this publication is deliberately simple, versioned, and focused on making technical learning visible over time.
+date: 2026-07-12
+category: projects
+tags:
+  - Next.js
+  - TypeScript
+  - GitHub
+  - System Design
+author: Gulshan Kumar
+readingTime: 6 min read
+featured: true
+coverImage: /images/cover-archive.svg
+status: published
+---
+
+This website is a project, but its output is not a feature list. It is an archive: a place where ideas can become clearer because they have to be written down and revisited.
+
+## The product is the reading experience
+
+A personal site can easily become a collection of badges, links, and claims. I wanted the primary action to be quieter: find a useful note, read it without fighting the layout, and follow a related thread.
+
+That decision shapes the engineering. Content needs a stable model. Routes need to be predictable. The visual system should create hierarchy without competing with the words.
+
+## Why MDX for version one
+
+MDX keeps publishing close to the tools I already use: files, commits, previews, and code review. It also leaves a clean seam for richer publishing workflows later without requiring a CMS before there is enough content to justify one.
+
+The current model stores the fields that help a reader and a search engine, while keeping the writing itself readable in the repository.
+
+## A small architecture with room to grow
+
+```text
+MDX files → content loader → typed post model
+                         ↓
+          routes + search + sitemap + related posts
+```
+
+The important part is not that this diagram is sophisticated. It is that a new post should flow through the system automatically. Publishing should not require editing the homepage by hand.
+
+## What I want to learn from it
+
+The first version should teach me how a publication behaves: which topics recur, where readers need context, and which parts of the writing process deserve better tools.
+
+The system can grow later. The archive has to start with something more important: a reason to keep writing.

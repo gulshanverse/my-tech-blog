@@ -1,0 +1,42 @@
+---
+title: How to Read a Research Paper as an Engineer
+description: A repeatable note-taking workflow for turning a paper from something to finish into something to build from.
+date: 2026-07-22
+category: research
+tags:
+  - AI Research
+  - Technical Analysis
+  - Git
+author: Gulshan Kumar
+readingTime: 7 min read
+featured: false
+coverImage: /images/cover-research.svg
+status: published
+---
+
+A research paper can be read as a story, a proof, or a design document. When I read as an engineer, I am less interested in remembering every sentence and more interested in finding the smallest set of claims that I could test.
+
+## Read the claim before the method
+
+Start with the abstract, conclusion, and figures. Write down what the authors believe changed and why the change matters. Then look for the exact experiment that supports that claim.
+
+This creates a useful tension. The paper presents a polished narrative; your notes should preserve the uncertainty underneath it.
+
+## Separate mechanism from result
+
+A result tells you what happened on a benchmark. A mechanism tells you what the system is doing that might explain the result. Keep them on separate lines in your notes:
+
+| Note | Question |
+| --- | --- |
+| Claim | What improved? |
+| Mechanism | What changed in the system? |
+| Evidence | Which experiment supports it? |
+| Boundary | When might it stop working? |
+
+The boundary is often the most valuable line. It tells you what a future experiment should try to break.
+
+## End with a buildable question
+
+Do not finish with “interesting paper.” Finish with a question that can become a small implementation: can I reproduce the baseline, remove one component, change the data, or observe a failure mode the paper does not discuss?
+
+A paper becomes part of your engineering practice when it changes what you are curious enough to build.

@@ -1,0 +1,35 @@
+---
+title: The Debugging Lesson I Want to Remember
+description: When a bug feels mysterious, reduce the system until the question becomes smaller than the fear around it.
+date: 2026-07-04
+category: learning
+tags:
+  - Learning Journal
+  - Testing
+  - TypeScript
+author: Gulshan Kumar
+readingTime: 4 min read
+featured: false
+coverImage: /images/cover-learning.svg
+status: published
+---
+
+The most expensive debugging habit is changing several things at once. It feels productive because the screen changes quickly. It is not productive if you no longer know which change helped.
+
+## Shrink the question
+
+When a page failed to render, my first instinct was to inspect the entire application. The better move was to ask a smaller question: does the data shape match what this one component expects?
+
+A smaller question creates a smaller experiment. Log the boundary, replace the dependency with a known value, or write the type that the code was relying on implicitly.
+
+## Make the invisible state visible
+
+Many bugs are not caused by the wrong value but by a value changing earlier than expected. A loading flag, a route parameter, or a browser-only API can be correct in isolation and wrong in sequence.
+
+I am trying to leave better evidence for future me: name the state, record the assumption, and make the failure observable before making the fix clever.
+
+## The note to carry forward
+
+Debugging is not a test of how quickly I can guess the cause. It is a practice of turning a vague failure into a question I can answer.
+
+The smaller the question, the more honest the answer.

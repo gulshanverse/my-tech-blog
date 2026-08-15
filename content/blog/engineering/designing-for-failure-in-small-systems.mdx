@@ -1,0 +1,63 @@
+---
+title: Designing for Failure in Small Systems
+description: Reliability is not only a distributed-systems concern. Even small applications benefit from making failure paths explicit.
+date: 2026-08-08
+category: engineering
+tags:
+  - TypeScript
+  - System Design
+  - Testing
+  - APIs
+author: Gulshan Kumar
+readingTime: 6 min read
+featured: true
+coverImage: /images/cover-systems.svg
+status: published
+---
+
+Small applications are often where failure handling is easiest to postpone. There are fewer services, fewer users, and fewer alarms. That makes it tempting to treat the happy path as the product and the failure path as a future problem.
+
+## A failure path is part of the interface
+
+When an API call fails, a user still needs an answer to three questions: what happened, what can they do next, and whether their previous work is safe. A spinner that never resolves is not a neutral state—it is an ambiguous one.
+
+Designing for failure starts by naming the states before writing the request code:
+
+- idle
+- loading
+- success
+- empty
+- recoverable error
+- unavailable
+
+That list is simple, but it changes implementation. The UI now has to make each state visible and testable.
+
+## Make boundaries narrow
+
+A small system gets easier to reason about when network access, parsing, and presentation have separate responsibilities. The component that renders a result should not also know how to retry a request or interpret every possible API response.
+
+```ts
+type Result<T> =
+  | { ok: true; value: T }
+  | { ok: false; message: string; retryable: boolean };
+
+async function loadProject(id: string): Promise<Result<Project>> {
+  const response = await fetch(`/api/projects/${id}`);
+  if (!response.ok) return { ok: false, message: "Could not load project", retryable: response.status >= 500 };
+  return { ok: true, value: await response.json() as Project };
+}
+```
+
+The point is not the exact type. The point is that the caller cannot accidentally forget that a request may fail.
+
+## Test the sentence, not the implementation
+
+A useful test describes what the person sees: “When the project service is unavailable, show a clear error and a retry action.” It should not only describe which mock function was called.
+
+This is especially important for empty states. An empty list can mean “there is no data,” “the filter is too specific,” or “the request failed silently.” Those are different product states and deserve different language.
+
+## A calmer definition of reliability
+
+Reliability is not the absence of errors. It is the ability to fail in a way that preserves trust. A small system can do that with explicit states, narrow boundaries, and tests that protect the user-facing promise.
+
+The earlier those decisions are made, the less expensive they become.

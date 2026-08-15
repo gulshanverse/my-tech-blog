@@ -1,0 +1,9 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { ArrowUpRight } from "lucide-react";
+import { getProject, projects } from "@/lib/projects";
+
+export function generateStaticParams() { return projects.map((project) => ({ slug: project.slug })); }
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> { const { slug } = await params; const project = getProject(slug); return project ? { title: project.name, description: project.description } : {}; }
+
+export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) { const { slug } = await params; const project = getProject(slug); if (!project) notFound(); return <><section className="page-hero"><div className="container"><div className="eyebrow">Project / {project.category}</div><h1>{project.name}</h1><p>{project.description}</p></div></section><section className="section"><div className="container"><div className="project-detail-grid"><div className="project-detail-main"><div className="article-cover" role="img" aria-label={`Abstract cover art for ${project.name}`}><span className="article-cover-label">{project.category} / build log</span></div><h2>Problem</h2><p>{project.problem}</p><h2>Solution</h2><p>{project.solution}</p><h2>Architecture</h2><ul>{project.architecture.map((item) => <li key={item}>{item}</li>)}</ul><h2>Features</h2><ul>{project.features.map((item) => <li key={item}>{item}</li>)}</ul><h2>Lessons learned</h2><p>{project.lessons}</p></div><aside className="project-aside"><h2>Project notes</h2><dl><dt>Status</dt><dd>{project.status}</dd><dt>Stack</dt><dd>{project.stack.join(" · ")}</dd></dl>{project.github && <a className="btn btn-primary" href={project.github} target="_blank" rel="noreferrer">View on GitHub <ArrowUpRight size={15} /></a>}</aside></div></div></section></>; }

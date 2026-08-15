@@ -1,0 +1,7 @@
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+import { siteConfig } from "@/lib/site";
+
+export function SiteFooter() {
+  return <footer className="site-footer"><div className="container"><div className="footer-grid"><div className="footer-brand"><Link className="brand" href="/"><span className="brand-mark" aria-hidden="true">GK</span><span className="brand-text"><span className="brand-name">Gulshan Kumar</span><span className="brand-role">Technical publication</span></span></Link><p className="footer-copy">Building, learning, and writing about AI, software, and technology. An evolving archive from the workbench.</p></div><div><p className="footer-heading">Explore</p><nav className="footer-links" aria-label="Footer navigation"><Link href="/blog">Blog</Link><Link href="/topics">Topics</Link><Link href="/projects">Projects</Link><Link href="/about">About</Link><Link href="/search">Search</Link></nav></div><div><p className="footer-heading">Connect</p><div className="footer-links"><a href={siteConfig.links.github} target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={13} /></a><a href={siteConfig.links.linkedin} target="_blank" rel="noreferrer">LinkedIn <ArrowUpRight size={13} /></a><a href={siteConfig.links.x} target="_blank" rel="noreferrer">X <ArrowUpRight size={13} /></a><a href={siteConfig.links.email}>Email <ArrowUpRight size={13} /></a></div></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} Gulshan Kumar</span><span>Made for good technical writing.</span></div></div></footer>;
+}
