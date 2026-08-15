@@ -79,11 +79,25 @@ export function getFeaturedPosts() {
   return getAllPosts().filter((post) => post.featured).slice(0, 4);
 }
 
+export type RelatedRecommendation = {
+  post: Post;
+  score: number;
+  reason: "Same topic" | "Shared tag" | "Fresh from the archive";
+  sharedTags: string[];
+};
+
+export function getRelatedRecommendations(post: Post, limit = 3): RelatedRecommendation[] {
+  return getAllPosts().filter((candidate) => candidate.slug !== post.slug).map((candidate) => {
+    const sharedTags = candidate.tags.filter((tag) => post.tags.includes(tag));
+    const sameCategory = candidate.category === post.category;
+    const score = (sameCategory ? 8 : 0) + sharedTags.length * 3 + (candidate.featured ? 1 : 0);
+    const reason: RelatedRecommendation["reason"] = sameCategory ? "Same topic" : sharedTags.length > 0 ? "Shared tag" : "Fresh from the archive";
+    return { post: candidate, score, reason, sharedTags };
+  }).sort((a, b) => b.score - a.score || new Date(b.post.date).getTime() - new Date(a.post.date).getTime()).slice(0, limit);
+}
+
 export function getRelatedPosts(post: Post, limit = 3) {
-  return getAllPosts().filter((candidate) => candidate.slug !== post.slug).map((candidate) => ({
-    post: candidate,
-    score: (candidate.category === post.category ? 4 : 0) + candidate.tags.filter((tag) => post.tags.includes(tag)).length,
-  })).sort((a, b) => b.score - a.score || new Date(b.post.date).getTime() - new Date(a.post.date).getTime()).slice(0, limit).map(({ post: related }) => related);
+  return getRelatedRecommendations(post, limit).map(({ post: related }) => related);
 }
 
 export function getToc(content: string): TocItem[] {
