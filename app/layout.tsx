@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { JetBrains_Mono, Inter, Source_Serif_4 } from "next/font/google";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -9,7 +10,8 @@ const serif = Source_Serif_4({ subsets: ["latin"], variable: "--font-serif", dis
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://gulshanblogs.vercel.app"),
+  metadataBase: new URL(siteConfig.url),
+  alternates: { canonical: "/", types: { "application/rss+xml": `${siteConfig.url}/feed.xml` } },
   title: {
     default: "Gulshan Kumar — AI, software, and technology",
     template: "%s — Gulshan Kumar",
