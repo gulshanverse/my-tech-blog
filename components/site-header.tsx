@@ -27,7 +27,7 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="container">
         <div className="nav-wrap">
-          <Link className="brand" href="/" onClick={() => setOpen(false)} aria-label="Gulshan Kumar home">
+          <Link className="brand" href="/" onClick={() => setOpen(false)}>
             <span className="brand-mark" aria-hidden="true">GK</span>
             <span className="brand-text"><span className="brand-name">Gulshan Kumar</span><span className="brand-role">Technical publication</span></span>
           </Link>

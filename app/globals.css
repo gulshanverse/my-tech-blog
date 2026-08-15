@@ -5,6 +5,7 @@
   --navy-surface: #0b1f3a;
   --deep-navy: #071426;
   --gold: #c9a227;
+  --gold-text: #765900;
   --gold-soft: #f4edcf;
   --ink: #172033;
   --muted: #667085;
@@ -34,11 +35,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .container { width: min(var(--container), calc(100% - 2rem)); margin-inline: auto; }
 .section { padding-block: 5.5rem; }
 .section-tight { padding-block: 3.5rem; }
-.eyebrow { color: var(--gold); font-family: var(--mono); font-size: .7rem; font-weight: 700; letter-spacing: .15em; line-height: 1.4; text-transform: uppercase; }
+.eyebrow { color: var(--gold-text); font-family: var(--mono); font-size: .7rem; font-weight: 700; letter-spacing: .15em; line-height: 1.4; text-transform: uppercase; }
 .display { color: var(--navy); font-size: clamp(2.8rem, 7vw, 6.5rem); font-weight: 800; letter-spacing: -.07em; line-height: .92; }
 .serif { font-family: var(--serif); }
 .text-balance { text-wrap: balance; }
 .muted { color: var(--muted); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 .site-header { position: sticky; top: 0; z-index: 50; border-bottom: 1px solid color-mix(in srgb, var(--line) 85%, transparent); background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(18px); }
 .nav-wrap { display: flex; min-height: 76px; align-items: center; justify-content: space-between; gap: 1rem; }
@@ -99,7 +101,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .feature-art span { position: absolute; right: 1rem; bottom: 1rem; color: var(--gold); font-family: var(--mono); font-size: .62rem; letter-spacing: .1em; }
 .card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; color: var(--muted); font-family: var(--mono); font-size: .62rem; letter-spacing: .03em; text-transform: uppercase; }
 .feature-card:first-child .card-meta { color: #b6c1d2; }
-.category { color: var(--gold); font-weight: 800; }
+.feature-card .category { color: #e9d68e; }
+.category { color: var(--gold-text); font-weight: 800; }
 .feature-card h3, .post-card h3, .project-card h3 { margin: .75rem 0 .65rem; color: var(--navy); font-size: clamp(1.3rem, 2vw, 1.75rem); letter-spacing: -.04em; line-height: 1.05; }
 .feature-card:first-child h3 { color: white; font-size: clamp(1.6rem, 2.5vw, 2.35rem); }
 .card-description { margin: 0; color: var(--muted); font-family: var(--serif); line-height: 1.5; }
@@ -115,7 +118,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .topic-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
 .topic-card { min-height: 190px; padding: 1.3rem; }
-.topic-card-number { display: flex; align-items: center; justify-content: space-between; color: var(--gold); font-family: var(--mono); font-size: .68rem; }
+.topic-card-number { display: flex; align-items: center; justify-content: space-between; color: var(--gold-text); font-family: var(--mono); font-size: .68rem; }
 .topic-card h3 { margin: 2.2rem 0 .6rem; color: var(--navy); font-size: 1.25rem; letter-spacing: -.04em; }
 .topic-card p { margin: 0; color: var(--muted); font-family: var(--serif); line-height: 1.4; }
 
@@ -283,7 +286,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .recommendation-art { display: flex; min-height: 260px; flex-direction: column; justify-content: space-between; background: var(--navy-surface); padding: 1rem; color: #e9d68e; font-family: var(--mono); font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; }
 .recommendation-art-mark { align-self: end; color: rgba(233, 214, 142, .5); font-size: 2rem; letter-spacing: -.08em; }
 .recommendation-copy { display: flex; flex-direction: column; padding: 1.25rem; }
-.recommendation-reason { margin-bottom: .45rem; color: var(--gold); font-family: var(--mono); font-size: .61rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.recommendation-reason { margin-bottom: .45rem; color: var(--gold-text); font-family: var(--mono); font-size: .61rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .recommendation-copy h3 { margin: .7rem 0 .6rem; color: var(--navy); font-size: clamp(1.2rem, 2.4vw, 1.65rem); letter-spacing: -.05em; line-height: 1.05; }
 .recommendation-copy p { margin: 0; color: var(--muted); font-family: var(--serif); line-height: 1.45; }
 .recommendation-copy .card-arrow { margin-top: auto; padding-top: 1rem; }
@@ -291,7 +294,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .recommendation-mini { display: grid; grid-template-columns: 2.3rem 1fr auto; align-items: start; gap: .7rem; min-height: 0; border-top: 1px solid var(--line); padding: .9rem .2rem .85rem; color: inherit; transition: border-color .18s ease, transform .18s var(--ease-out); }
 .recommendation-mini:last-child { border-bottom: 1px solid var(--line); }
 .recommendation-mini:hover { border-color: var(--gold); transform: translateX(3px); }
-.recommendation-mini-number { color: var(--gold); font-family: var(--mono); font-size: .72rem; font-weight: 700; }
+.recommendation-mini-number { color: var(--gold-text); font-family: var(--mono); font-size: .72rem; font-weight: 700; }
 .recommendation-mini h3 { margin: .25rem 0 .35rem; color: var(--navy); font-size: 1.05rem; letter-spacing: -.04em; line-height: 1.1; }
 .recommendation-mini-meta { color: var(--muted); font-family: var(--mono); font-size: .58rem; text-transform: uppercase; }
 .recommendation-mini-arrow { color: var(--gold); }
@@ -302,6 +305,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .topic-intro p { max-width: 450px; margin: 0; color: var(--muted); font-family: var(--serif); font-size: 1.1rem; line-height: 1.5; }
 .topic-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
 .topic-list-card { display: flex; min-height: 240px; flex-direction: column; border-top: 3px solid var(--navy); background: var(--mist); padding: 1.4rem; }
+.topic-list-card .topic-card-number { color: var(--gold-text); }
 .topic-list-card h2 { margin: .8rem 0 .5rem; color: var(--navy); font-size: 1.4rem; letter-spacing: -.04em; }
 .topic-list-card p { margin: 0; color: var(--muted); font-family: var(--serif); line-height: 1.45; }
 .tag-cloud { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: auto; padding-top: 1.4rem; }
@@ -407,6 +411,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   --navy-surface: #102844;
   --deep-navy: #071426;
   --gold: #e4c45d;
+  --gold-text: #e4c45d;
   --gold-soft: #403717;
   --ink: #e8edf5;
   --muted: #aeb8c8;

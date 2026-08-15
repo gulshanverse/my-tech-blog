@@ -95,6 +95,7 @@ export function ArticleExplorer({ posts, categories = [], tags = [], initialQuer
 
   return (
     <div className="article-explorer">
+      <h2 className="sr-only">{mode === "search" ? "Search results" : "Articles"}</h2>
       <div className="explorer-toolbar">
         <form className="search-form explorer-search" onSubmit={handleSubmit} role="search">
           <Search className="search-icon" size={17} strokeWidth={1.8} aria-hidden="true" />
