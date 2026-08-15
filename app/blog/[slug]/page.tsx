@@ -17,7 +17,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const post = getPost(slug);
   if (!post) return {};
-  return { title: post.seoTitle || post.title, description: post.seoDescription || post.description, alternates: { canonical: `/blog/${post.slug}` }, openGraph: { type: "article", title: post.title, description: post.description, publishedTime: post.date, modifiedTime: post.updatedAt || post.date, authors: [post.author], tags: post.tags } };
+  const category = getCategory(post.category);
+  const canonicalUrl = `${siteConfig.url}/blog/${post.slug}`;
+  const imageUrl = `${canonicalUrl}/opengraph-image`;
+  return { title: post.seoTitle || post.title, description: post.seoDescription || post.description, authors: [{ name: post.author }], alternates: { canonical: canonicalUrl }, openGraph: { type: "article", url: canonicalUrl, title: post.title, description: post.description, publishedTime: post.date, modifiedTime: post.updatedAt || post.date, authors: [post.author], section: category?.name, tags: post.tags, images: [{ url: imageUrl, width: 1200, height: 630, alt: `${post.title} — ${siteConfig.name}` }] }, twitter: { card: "summary_large_image", title: post.title, description: post.description, images: [imageUrl] } };
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {

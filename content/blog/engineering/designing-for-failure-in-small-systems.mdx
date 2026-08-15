@@ -19,7 +19,9 @@ Small applications are often where failure handling is easiest to postpone. Ther
 
 ## A failure path is part of the interface
 
-When an API call fails, a user still needs an answer to three questions: what happened, what can they do next, and whether their previous work is safe. A spinner that never resolves is not a neutral state—it is an ambiguous one.
+When an API call fails, a user still needs an answer to three questions: what happened, what can they do next, and whether their previous work is safe.
+
+<Warning>A spinner that never resolves is not a neutral state—it is an ambiguous one. Make the failure state visible and give the reader a clear next action.</Warning>
 
 Designing for failure starts by naming the states before writing the request code:
 
