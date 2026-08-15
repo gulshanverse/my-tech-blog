@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
-import { ArticleCardRow } from "@/components/article-card";
-import { SearchBox } from "@/components/search-box";
-import { getAllPosts } from "@/lib/content";
+import { ArticleExplorer } from "@/components/article-explorer";
+import { categoryMeta } from "@/lib/site";
+import { getAllPosts, getAllTags } from "@/lib/content";
 
 export const metadata: Metadata = { title: "Search", description: "Search Gulshan Kumar's technical writing by title, description, content, category, and tags." };
 
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) { const { q } = await searchParams; const query = (q || "").trim(); const normalized = query.toLowerCase(); const results = normalized ? getAllPosts().filter((post) => [post.title, post.description, post.content, post.category, ...post.tags].join(" ").toLowerCase().includes(normalized)) : []; return <><section className="page-hero"><div className="container"><div className="eyebrow">The archive search</div><h1>Find the<br /><span className="serif">useful thread.</span></h1><p>Search across titles, descriptions, article content, categories, and tags.</p></div></section><section className="section"><div className="container"><div style={{ maxWidth: "600px", marginBottom: "2rem" }}><SearchBox /></div>{query ? <div className="archive-toolbar"><span className="archive-count">{results.length} {results.length === 1 ? "result" : "results"} for “{query}”</span></div> : <div className="empty-state"><h2>Start with a question or technology.</h2><p>Try “RAG”, “Python”, “architecture”, or “learning”.</p></div>}{results.length > 0 && <div className="post-grid">{results.map((post) => <ArticleCardRow key={post.slug} post={post} />)}</div>}{query && results.length === 0 && <div className="empty-state"><h2>No matching notes yet.</h2><p>Try a broader search term or explore the topics index.</p></div>}</div></section></>; }
+type SearchParams = { q?: string; category?: string; tag?: string };
+
+export default async function SearchPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const posts = getAllPosts();
+  const { q = "", category = "", tag = "" } = await searchParams;
+  const categories = Object.values(categoryMeta).map((item) => ({ slug: item.slug, shortName: item.shortName }));
+
+  return <><section className="page-hero"><div className="container"><div className="eyebrow">The archive search</div><h1>Find the<br /><span className="serif">useful thread.</span></h1><p>Search across titles, descriptions, article content, categories, and tags. Results update instantly as you type.</p></div></section><section className="section"><div className="container"><ArticleExplorer posts={posts} categories={categories} tags={getAllTags()} initialQuery={q} initialCategory={category} initialTag={tag} mode="search" /></div></section></>;
+}
