@@ -28,9 +28,22 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+const themeScript = `
+  try {
+    const stored = localStorage.getItem("gulshan-theme");
+    const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    const theme = stored === "dark" || stored === "light" ? stored : preferred;
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+  } catch {}
+`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className={`${inter.variable} ${serif.variable} ${mono.variable}`}>
         <a className="skip-link" href="#main-content">Skip to content</a>
         <SiteHeader />
