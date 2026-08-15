@@ -3,6 +3,7 @@ export type Project = {
   name: string;
   category: string;
   description: string;
+  coverImage: string;
   status: string;
   stack: string[];
   github?: string;
@@ -20,6 +21,7 @@ export const projects: Project[] = [
     name: "RailYatra",
     category: "Full-stack product",
     description: "A thoughtful travel planning experience that turns a complicated railway journey into a clearer, more useful flow.",
+    coverImage: "/images/project-railyatra.png",
     status: "Iterating",
     stack: ["Next.js", "TypeScript", "PostgreSQL", "Tailwind"],
     github: "https://github.com/gulshanverse",
@@ -34,6 +36,7 @@ export const projects: Project[] = [
     name: "Signalboard",
     category: "AI experiment",
     description: "A small workspace for comparing retrieval prompts, context windows, and the quality of answers from language models.",
+    coverImage: "/images/project-signalboard.png",
     status: "Prototype",
     stack: ["Python", "FastAPI", "LLM APIs", "RAG"],
     github: "https://github.com/gulshanverse",
@@ -48,6 +51,7 @@ export const projects: Project[] = [
     name: "Campus Circles",
     category: "Community platform",
     description: "A campus-first project exploring how students can find collaborators for learning, clubs, and small technical builds.",
+    coverImage: "/images/project-campus-circles.png",
     status: "Shipped",
     stack: ["React", "Node.js", "MongoDB", "GitHub Actions"],
     github: "https://github.com/gulshanverse",
@@ -62,6 +66,7 @@ export const projects: Project[] = [
     name: "Paper to Prototype",
     category: "Research notes",
     description: "A reading workflow for turning research papers into short implementation notes, diagrams, and testable questions.",
+    coverImage: "/images/project-paper-to-prototype.png",
     status: "Ongoing",
     stack: ["Python", "Markdown", "Mermaid", "Git"],
     github: "https://github.com/gulshanverse",

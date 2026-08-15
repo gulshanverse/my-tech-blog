@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { categoryMeta, type CategorySlug } from "@/lib/site";
@@ -9,5 +10,5 @@ function formatDate(date: string) {
 
 export function ArticleResultCard({ post }: { post: Post }) {
   const category = categoryMeta[post.category as CategorySlug];
-  return <Link className="post-card" href={`/blog/${post.slug}`}><div className="card-meta"><span className="category">{category?.shortName}</span><span>·</span><span>{formatDate(post.date)}</span><span>·</span><span>{post.readingTime}</span></div><h3>{post.title}</h3><p className="card-description">{post.description}</p><span className="card-arrow">Open article <ArrowUpRight size={15} /></span></Link>;
+  return <Link className="post-card" href={`/blog/${post.slug}`}><div className="article-thumb"><Image src={post.coverImage} alt="" fill sizes="(max-width: 620px) 100vw, (max-width: 1100px) 50vw, 33vw" className="cover-image" /></div><div className="card-meta"><span className="category">{category?.shortName}</span><span>·</span><span>{formatDate(post.date)}</span><span>·</span><span>{post.readingTime}</span></div><h3>{post.title}</h3><p className="card-description">{post.description}</p><span className="card-arrow">Open article <ArrowUpRight size={15} /></span></Link>;
 }
