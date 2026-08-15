@@ -101,10 +101,25 @@ export function getRelatedPosts(post: Post, limit = 3) {
 }
 
 export function getToc(content: string): TocItem[] {
+  const usedSlugs = new Map<string, number>();
+  let insideFence = false;
+
   return content.split("\n").flatMap((line) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("```") || trimmed.startsWith("~~~")) {
+      insideFence = !insideFence;
+      return [];
+    }
+    if (insideFence) return [];
+
     const match = /^(##|###)\s+(.+?)\s*$/.exec(line);
     if (!match) return [];
-    return [{ depth: match[1].length as 2 | 3, text: match[2].replace(/[`*_]/g, ""), slug: slugify(match[2]) }];
+    const text = match[2].replace(/[`*_]/g, "");
+    const baseSlug = slugify(text) || "section";
+    const occurrence = usedSlugs.get(baseSlug) || 0;
+    usedSlugs.set(baseSlug, occurrence + 1);
+    const slug = occurrence === 0 ? baseSlug : `${baseSlug}-${occurrence}`;
+    return [{ depth: match[1].length as 2 | 3, text, slug }];
   });
 }
 
