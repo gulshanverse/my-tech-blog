@@ -198,10 +198,18 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .article-prose th { background: var(--mist); color: var(--navy); }
 .article-prose code:not(pre code) { border: 1px solid var(--line); background: var(--mist); padding: .15rem .3rem; color: var(--navy); font-family: var(--mono); font-size: .82em; }
 .code-shell { margin: 2rem 0; overflow: hidden; border: 1px solid #263b59; background: #0d1a2d; }
-.code-bar { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #263b59; padding: .55rem .8rem; color: #aeb8c8; font-family: var(--mono); font-size: .63rem; }
-.code-copy { border: 0; background: transparent; color: #e9d68e; font-family: var(--mono); font-size: .63rem; cursor: pointer; }
-.code-copy:hover { color: white; }
-.code-shell pre { margin: 0; overflow-x: auto; padding: 1rem; font-family: var(--mono); font-size: .82rem; line-height: 1.65; }
+.code-bar { display: flex; align-items: center; justify-content: space-between; gap: .8rem; border-bottom: 1px solid #263b59; padding: .55rem .8rem; color: #aeb8c8; font-family: var(--mono); font-size: .63rem; }
+.code-language { display: inline-flex; align-items: center; gap: .45rem; color: #e9d68e; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.code-language-dot { width: .42rem; height: .42rem; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 18%, transparent); }
+.code-actions { display: inline-flex; align-items: center; gap: .2rem; }
+.code-control { display: inline-flex; align-items: center; gap: .3rem; border: 1px solid transparent; background: transparent; color: #aeb8c8; padding: .28rem .4rem; font-family: var(--mono); font-size: .6rem; cursor: pointer; transition: border-color .18s ease, background .18s ease, color .18s ease; }
+.code-control:hover, .code-control--active { border-color: #526178; background: #172b47; color: white; }
+.code-control--copy { color: #e9d68e; }
+.code-shell pre { max-height: 520px; margin: 0; overflow: auto; padding: 1rem; font-family: var(--mono); font-size: .82rem; line-height: 1.65; transition: max-height .22s var(--ease-out); }
+.code-shell--expanded pre { max-height: min(80vh, 840px); }
+.code-shell pre[data-line-numbers="true"] code { counter-reset: code-line; }
+.code-shell pre[data-line-numbers="true"] code > [data-line] { display: inline-block; width: 100%; counter-increment: code-line; }
+.code-shell pre[data-line-numbers="true"] code > [data-line]::before { display: inline-block; width: 2.4rem; margin-right: 1rem; border-right: 1px solid #263b59; padding-right: .8rem; color: #667c99; content: counter(code-line); text-align: right; user-select: none; }
 .callout { margin: 2rem 0; border: 1px solid var(--line); border-left: 3px solid var(--gold); background: var(--mist); padding: 1rem 1.2rem; font-family: var(--sans); font-size: .94rem; line-height: 1.55; }
 .callout strong { display: block; margin-bottom: .25rem; color: var(--navy); font-family: var(--mono); font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; }
 .progress-track { position: fixed; top: 0; left: 0; z-index: 60; width: 100%; height: 3px; background: transparent; }
@@ -343,7 +351,7 @@ html[data-theme="dark"] { color-scheme: dark; }
 }
 .theme-toggle:hover { border-color: var(--gold); background: var(--mist); color: var(--navy); transform: translateY(-1px); }
 .theme-toggle:active { transform: scale(.97); }
-.theme-toggle:focus-visible, .menu-button:focus-visible, .btn:focus-visible, .nav-link:focus-visible, .search-form button:focus-visible, .filter-chip:focus-visible, .code-copy:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.theme-toggle:focus-visible, .menu-button:focus-visible, .btn:focus-visible, .nav-link:focus-visible, .search-form button:focus-visible, .filter-chip:focus-visible, .code-control:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 
 [data-theme="dark"] .site-header { box-shadow: 0 8px 24px rgba(0, 0, 0, .16); }
 [data-theme="dark"] .nav-link:hover, [data-theme="dark"] .nav-link[aria-current="page"] { color: var(--navy); }
@@ -369,4 +377,7 @@ html[data-theme="dark"] { color-scheme: dark; }
 @media (max-width: 620px) {
   .theme-toggle-label { display: none; }
   .theme-toggle { width: 36px; padding-inline: 0; }
+  .code-bar { align-items: flex-start; flex-direction: column; }
+  .code-actions { width: 100%; justify-content: flex-start; overflow-x: auto; }
+  .code-control { flex: 0 0 auto; }
 }
