@@ -122,6 +122,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .post-card .card-description { font-size: .98rem; }
 .post-card .card-arrow { padding-top: 1rem; }
 
+.selected-writing-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.latest-writing-list { border-top: 1px solid var(--line); }
+.latest-writing-row { display: grid; grid-template-columns: 8rem minmax(0, 1fr) auto; align-items: center; gap: 1.25rem; border-bottom: 1px solid var(--line); padding: 1.15rem 0; color: var(--navy); }
+.latest-writing-row:hover .latest-writing-link { color: var(--gold); }
+.latest-writing-date { color: var(--muted); font-family: var(--mono); font-size: .68rem; letter-spacing: .04em; text-transform: uppercase; }
+.latest-writing-body { display: grid; gap: .35rem; min-width: 0; }
+.latest-writing-body strong { overflow: hidden; font-size: clamp(1.05rem, 1.8vw, 1.35rem); letter-spacing: -.035em; text-overflow: ellipsis; white-space: nowrap; }
+.latest-writing-meta { display: inline-flex; align-items: center; gap: .45rem; color: var(--muted); font-family: var(--mono); font-size: .62rem; letter-spacing: .04em; text-transform: uppercase; }
+.latest-writing-link { display: inline-flex; align-items: center; gap: .35rem; color: var(--navy); font-size: .74rem; font-weight: 800; white-space: nowrap; }
+
 .topic-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
 .topic-card { min-height: 190px; padding: 1.3rem; }
 .topic-card-number { display: flex; align-items: center; justify-content: space-between; color: var(--gold-text); font-family: var(--mono); font-size: .68rem; }
@@ -403,6 +413,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .hero-title { font-size: clamp(3.1rem, 17vw, 5rem); }
   .hero-grid { padding-block: 4.5rem; }
   .feature-grid, .post-grid, .topic-grid, .project-grid, .topic-list, .related-grid { grid-template-columns: 1fr; }
+  .selected-writing-grid { grid-template-columns: 1fr; }
+  .latest-writing-row { grid-template-columns: 1fr auto; gap: .45rem 1rem; }
+  .latest-writing-date { grid-column: 1 / -1; }
+  .latest-writing-body strong { white-space: normal; }
   .recommendation-grid { grid-template-columns: 1fr; }
   .recommendation-lead { grid-template-columns: 150px 1fr; }
 
