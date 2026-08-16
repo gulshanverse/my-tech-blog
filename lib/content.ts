@@ -15,6 +15,7 @@ export type Post = {
   tags: string[];
   author: string;
   readingTime: string;
+  difficulty?: string;
   coverImage: string;
   featured: boolean;
   status: PostStatus;
@@ -49,6 +50,7 @@ function readPost(filePath: string, category: CategorySlug): Post {
     tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
     author: String(data.author || "Gulshan Kumar"),
     readingTime: String(data.readingTime || `${Math.max(1, Math.ceil(words / 200))} min read`),
+    difficulty: data.difficulty ? String(data.difficulty) : data.level ? String(data.level) : undefined,
     coverImage: String(data.coverImage || "/images/cover-editorial.svg"),
     featured: Boolean(data.featured),
     status: String(data.status || "published") as PostStatus,
@@ -129,6 +131,16 @@ export function formatDate(date: string) {
 
 export function getCategory(category: string) {
   return categoryMeta[category as CategorySlug];
+}
+
+function normalizeTopicLabel(value: string) {
+  return value.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+export function getTopicHref(label: string) {
+  const normalized = normalizeTopicLabel(label);
+  const category = categorySlugs.find((slug) => slug === normalized || normalizeTopicLabel(categoryMeta[slug].name) === normalized || normalizeTopicLabel(categoryMeta[slug].shortName) === normalized);
+  return category ? `/topics/${category}` : undefined;
 }
 
 export function getAllTags() {

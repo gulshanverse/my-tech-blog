@@ -20,6 +20,14 @@ seoDescription: Learn the moving pieces of a retrieval-augmented generation syst
 
 Retrieval-augmented generation is often described as “search plus an LLM.” That is directionally right, but it hides the engineering decisions that make the result useful. A RAG system is a small information pipeline: it decides what to remember, what to retrieve, and how to present evidence to a model.
 
+<KeyTakeaways>
+
+- Understand the five-step retrieval loop.
+- Keep provenance attached to every retrieved chunk.
+- Separate retrieval quality from generation quality.
+
+</KeyTakeaways>
+
 ## The problem RAG is trying to solve
 
 A language model can write fluently without knowing anything about a private document set. Fine-tuning can change behavior, but it is not always the right tool for facts that change frequently or need to be cited. RAG keeps the model general and supplies relevant context at request time.

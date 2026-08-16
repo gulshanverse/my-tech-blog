@@ -140,6 +140,15 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .status { display: inline-flex; align-items: center; gap: .35rem; color: var(--muted); font-family: var(--mono); font-size: .65rem; text-transform: uppercase; }
 .status::before { width: .4rem; height: .4rem; border-radius: 50%; background: #4c9a67; content: ""; }
 
+.exploring-header { display: grid; grid-template-columns: .85fr 1.15fr; gap: 5rem; align-items: end; margin-bottom: 2rem; }
+.exploring-header h2 { margin: .6rem 0 0; color: var(--navy); font-size: clamp(2.2rem, 5vw, 4.4rem); letter-spacing: -.07em; line-height: .94; }
+.exploring-header p { max-width: 620px; margin: 0; color: var(--muted); font-family: var(--serif); font-size: 1.2rem; line-height: 1.55; }
+.exploring-list { border-top: 1px solid var(--line); }
+.exploring-item { display: grid; grid-template-columns: 4rem minmax(150px, .7fr) 1fr; align-items: baseline; gap: 1rem; border-bottom: 1px solid var(--line); padding: 1.2rem 0; }
+.exploring-number { color: var(--gold-text); font-family: var(--mono); font-size: .68rem; font-weight: 700; }
+.exploring-item h3 { margin: 0; color: var(--navy); font-size: clamp(1.15rem, 2vw, 1.55rem); letter-spacing: -.04em; }
+.exploring-item p { max-width: 480px; margin: 0; color: var(--muted); font-family: var(--serif); line-height: 1.45; }
+
 .about-band { display: grid; grid-template-columns: .85fr 1.15fr; gap: 5rem; align-items: start; }
 .about-band h2 { max-width: 520px; margin: .6rem 0 1.2rem; color: var(--navy); font-size: clamp(2.2rem, 5vw, 4.4rem); letter-spacing: -.07em; line-height: .94; }
 .about-band p { max-width: 620px; margin: 0; color: var(--muted); font-family: var(--serif); font-size: 1.2rem; line-height: 1.55; }
@@ -255,8 +264,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .code-control { display: inline-flex; align-items: center; gap: .3rem; border: 1px solid transparent; border-radius: 7px; background: transparent; color: #aeb8c8; padding: .28rem .4rem; font-family: var(--mono); font-size: .6rem; cursor: pointer; transition: border-color .18s ease, background .18s ease, color .18s ease; }
 .code-control:hover, .code-control--active { border-color: #526178; background: #172b47; color: white; }
 .code-control--copy { color: #e9d68e; }
-.code-shell pre { max-height: 520px; margin: 0; overflow: auto; padding: 1rem; font-family: var(--mono); font-size: .82rem; line-height: 1.65; transition: max-height .22s var(--ease-out); }
-.code-shell--expanded pre { max-height: min(80vh, 840px); }
+.code-shell pre { width: 100%; max-width: 100%; max-height: 520px; min-width: 0; margin: 0; overflow: auto; padding: 1rem; font-family: var(--mono); font-size: .82rem; line-height: 1.65; overscroll-behavior: contain; transition: max-height .22s var(--ease-out); }
+.code-shell pre code { display: block; min-width: max-content; }
+.code-shell--expanded pre { max-height: none; }
 .code-shell pre[data-line-numbers="true"] code { counter-reset: code-line; }
 .code-shell pre[data-line-numbers="true"] code > [data-line] { display: inline-block; width: 100%; counter-increment: code-line; }
 .code-shell pre[data-line-numbers="true"] code > [data-line]::before { display: inline-block; width: 2.4rem; margin-right: 1rem; border-right: 1px solid #263b59; padding-right: .8rem; color: #667c99; content: counter(code-line); text-align: right; user-select: none; }
@@ -272,6 +282,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .mdx-callout--warning .mdx-callout-heading svg { color: #c56b32; }
 .mdx-callout--info { border-left-color: #4f7da9; }
 .mdx-callout--info .mdx-callout-heading svg { color: #4f7da9; }
+.key-takeaways { margin: 1.8rem 0 2.2rem; border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 12px; background: var(--mist); padding: 1rem 1.2rem; color: var(--navy); font-family: var(--sans); font-size: .95rem; line-height: 1.55; }
+.key-takeaways-label, .related-topics-label { color: var(--gold-text); font-family: var(--mono); font-size: .66rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.key-takeaways-content > :first-child { margin-top: .65rem; }
+.key-takeaways-content > :last-child { margin-bottom: 0; }
+.key-takeaways-content ul, .key-takeaways-content ol { margin: .65rem 0 0; padding-left: 1.25rem; }
+.key-takeaways-content li { margin: .25rem 0; }
 .progress-track { position: fixed; top: 0; left: 0; z-index: 60; width: 100%; height: 3px; background: transparent; }
 .progress-value { height: 100%; width: 0; background: var(--gold); transition: width .08s linear; }
 
@@ -305,6 +321,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .recommendation-mini-meta { color: var(--muted); font-family: var(--mono); font-size: .58rem; text-transform: uppercase; }
 .recommendation-mini-arrow { color: var(--gold); }
 .related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.related-topics { margin-top: 2rem; border-top: 1px solid var(--line); padding-top: 1.3rem; }
+.related-topics-list { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .7rem; }
+.related-topics-tag { display: inline-flex; color: var(--muted); text-decoration: none; }
+.related-topics-tag[href]:hover { border-color: var(--gold); color: var(--navy); }
 
 .topic-intro { display: flex; align-items: end; justify-content: space-between; gap: 2rem; border-bottom: 1px solid var(--line); padding-bottom: 2.5rem; }
 .topic-intro h1 { max-width: 700px; margin: .6rem 0 .8rem; color: var(--navy); font-size: clamp(2.8rem, 6vw, 5.8rem); letter-spacing: -.08em; line-height: .9; }
@@ -484,6 +504,9 @@ html[data-theme="dark"] { color-scheme: dark; }
   .theme-toggle-label { display: none; }
   .theme-toggle { width: 36px; padding-inline: 0; }
   .related-heading { align-items: start; flex-direction: column; }
+  .exploring-header { grid-template-columns: 1fr; align-items: start; gap: 1rem; }
+  .exploring-item { grid-template-columns: 2.5rem 1fr; gap: .6rem; }
+  .exploring-item p { grid-column: 2; }
   .recommendation-lead { grid-template-columns: 1fr; }
   .recommendation-art { min-height: 150px; }
   .article-thumb { min-height: 125px; }
