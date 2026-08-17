@@ -28,6 +28,7 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image", title: "Gulshan Kumar — AI, software, and technology" },
   robots: { index: true, follow: true },
+  verification: { google: "OZf0IUpuU7jih89scnK04yJ5y6ssl6gpPcCJ74rPrE0" },
 };
 
 const themeScript = `
