@@ -17,7 +17,7 @@ describe("Author Studio article helpers", () => {
 
   it("keeps published metadata in serialized frontmatter and validates MDX", async () => {
     const { draftToSource, validateDraft } = await import("@/lib/author-articles");
-    const input = { title: "A Published Test", slug: "a-published-test", category: "ai" as const, tags: "RAG", description: "Description", coverImage: "/cover.svg", coverAlt: "Cover", readingTime: "5 min read", difficulty: "Intermediate", status: "published" as const, content: "## Heading\n\nContent.", date: "2026-08-18", updatedAt: "", featured: false };
+    const input = { title: "A Published Test", slug: "a-published-test", category: "ai" as const, tags: "RAG", description: "Description", coverImage: "/cover.svg", coverAlt: "Cover", readingTime: "5 min read", difficulty: "Intermediate" as const, status: "published" as const, content: "## Heading\n\nContent.", date: "2026-08-18", updatedAt: "", featured: false };
     const source = draftToSource(input);
     expect(source).toContain("status: published");
     expect(source).toContain("author: Gulshan Kumar");

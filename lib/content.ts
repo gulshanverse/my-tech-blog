@@ -2,7 +2,9 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { categoryMeta, type CategorySlug } from "./site";
+import { parseReadingTime, normalizeDifficulty } from "./article-metadata";
 export { formatDate } from "./format";
+export { formatReadingTime } from "./article-metadata";
 
 export type PostStatus = "draft" | "published";
 
@@ -15,8 +17,8 @@ export type Post = {
   category: CategorySlug;
   tags: string[];
   author: string;
-  readingTime: string;
-  difficulty?: string;
+  readingTime: number;
+  difficulty?: import("./article-metadata").Difficulty;
   coverImage: string;
   coverAlt?: string;
   featured: boolean;
@@ -49,8 +51,8 @@ export function parsePostSource(source: string, category: CategorySlug, slug: st
     category: (String(data.category || category) as CategorySlug),
     tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
     author: String(data.author || "Gulshan Kumar"),
-    readingTime: String(data.readingTime || `${Math.max(1, Math.ceil(words / 200))} min read`),
-    difficulty: data.difficulty ? String(data.difficulty) : data.level ? String(data.level) : undefined,
+    readingTime: parseReadingTime(data.readingTime) || Math.max(1, Math.ceil(words / 200)),
+    difficulty: normalizeDifficulty(data.difficulty || data.level),
     coverImage: String(data.coverImage || "/images/cover-editorial.svg"),
     coverAlt: data.coverAlt ? String(data.coverAlt) : undefined,
     featured: Boolean(data.featured),

@@ -47,7 +47,7 @@ test.describe("private route protection", () => {
     await page.getByLabel("USERNAME").fill("invalid-user");
     await page.getByLabel("PASSWORD").fill("invalid-password");
     await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page.getByRole("alert").first()).toContainText(/authentication|invalid|unable|incorrect/i);
+    await expect(page.locator(".form-error").first()).toContainText(/authentication|invalid|unable|incorrect/i);
     await expect(page).toHaveURL(/\/author\/login$/);
   });
 });
@@ -73,6 +73,27 @@ test.describe("authenticated Author Studio workflow", () => {
     await expect(search).toHaveValue("");
     await page.getByRole("button", { name: "Published" }).click();
     await expect(page.getByRole("button", { name: /Agentic AI Explained/i }).first()).toBeVisible();
+  });
+
+  test("metadata controls are controlled, numeric, and keyboard accessible", async ({ page }) => {
+    await page.getByRole("button", { name: /New article/i }).click();
+    const difficulty = page.getByRole("combobox", { name: "Difficulty" });
+    await difficulty.selectOption("Beginner");
+    await expect(difficulty).toHaveValue("Beginner");
+    await difficulty.selectOption("Intermediate");
+    await expect(difficulty).toHaveValue("Intermediate");
+    await difficulty.selectOption("Advanced");
+    await expect(difficulty).toHaveValue("Advanced");
+    const readingTime = page.getByRole("spinbutton", { name: "Reading time in minutes" });
+    await expect(readingTime).toHaveValue("1");
+    await page.getByRole("button", { name: "Increase reading time" }).click();
+    await expect(readingTime).toHaveValue("2");
+    await page.getByRole("button", { name: "Decrease reading time" }).click();
+    await expect(readingTime).toHaveValue("1");
+    await expect(page.getByRole("button", { name: "Decrease reading time" })).toBeDisabled();
+    await readingTime.fill("6");
+    await expect(readingTime).toHaveValue("6");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   });
 
   test("published article opens Share Studio without social publishing", async ({ page }) => {

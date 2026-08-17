@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseReadingTime } from "@/lib/article-metadata";
 import rehypePrettyCode from "rehype-pretty-code";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
   try {
     const input = await request.json() as ArticleDraftInput;
     const tags = String(input.tags || "").split(/[,\n]/).map((tag) => tag.trim()).filter(Boolean);
-    const previewPost: Post = { slug: input.slug || "preview", title: input.title || "Untitled article", description: input.description || "", date: input.date || new Date().toISOString().slice(0, 10), updatedAt: input.updatedAt || undefined, category: input.category, tags, author: "Gulshan Kumar", readingTime: input.readingTime || "", difficulty: input.difficulty || undefined, coverImage: input.coverImage || "", coverAlt: input.coverAlt, featured: Boolean(input.featured), status: input.status || "draft", content: input.content || "" };
+    const previewPost: Post = { slug: input.slug || "preview", title: input.title || "Untitled article", description: input.description || "", date: input.date || new Date().toISOString().slice(0, 10), updatedAt: input.updatedAt || undefined, category: input.category, tags, author: "Gulshan Kumar", readingTime: parseReadingTime(input.readingTime) || 1, difficulty: input.difficulty || undefined, coverImage: input.coverImage || "", coverAlt: input.coverAlt, featured: Boolean(input.featured), status: input.status || "draft", content: input.content || "" };
     const compiled = await serialize(input.content || "Write your article content to preview it here.", { blockJS: true, blockDangerousJS: true, mdxOptions: { remarkPlugins: [remarkGfm], rehypePlugins: [rehypeSlug, [rehypePrettyCode, { theme: "github-dark-dimmed" }]] } });
     const category = getCategory(input.category);
     return NextResponse.json({ serialized: compiled, toc: getToc(previewPost.content), category: { name: category?.name, shortName: category?.shortName }, recommendations: getRelatedRecommendations(previewPost) });
