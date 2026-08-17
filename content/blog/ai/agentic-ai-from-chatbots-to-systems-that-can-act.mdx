@@ -1,0 +1,97 @@
+---
+title: 'Agentic AI: From Chatbots to Systems That Can Act'
+description: >-
+  A practical introduction to Agentic AI, exploring how AI systems move beyond
+  generating responses to reasoning, using tools, maintaining context, and
+  completing multi-step tasks.
+date: '2026-08-17'
+category: ai
+tags:
+  - Agentic AI
+  - Agent
+  - LLM
+  - AI Engineering
+  - LangGraph
+author: Gulshan Kumar
+readingTime: 8 min read
+coverImage: /images/cover-editorial.svg
+coverAlt: >-
+  Abstract illustration representing Agentic AI, AI agents, and intelligent
+  software systems.
+featured: true
+status: published
+updatedAt: '2026-08-17'
+difficulty: Intermediate
+---
+
+<KeyTakeaways>
+- Understand what Agentic AI actually means beyond the hype.
+- Learn the core architecture behind an AI agent.
+- See how models, tools, memory, planning, and orchestration work together.
+- Understand the difference between a chatbot, RAG system, and agentic system.
+- Build a simple tool-using agent conceptually from scratch.
+- Explore where LangGraph fits into production agent architectures.
+- Understand why reliability, observability, guardrails, and evaluation matter.
+</KeyTakeaways>
+
+# Agentic AI: From LLMs to Systems That Can Act
+
+Large language models changed the way we interact with software.
+
+Instead of navigating through menus, learning complicated interfaces, or writing precise commands, we can now describe what we want in natural language.
+
+Ask a model to explain a concept, write code, summarize a document, or brainstorm an idea, and it can produce an answer almost instantly.
+
+But there is a fundamental limitation.
+
+A model that can generate an excellent answer is not necessarily a system that can **complete a real-world task**.
+
+Consider the difference between these two requests:
+
+> "Explain how RAG works."
+
+and:
+
+> "Research the latest approaches to RAG, compare them, identify the trade-offs, test a few approaches, and prepare a technical report."
+
+The first problem can be handled reasonably well by a single model call.
+
+The second requires a workflow.
+
+The system may need to:
+
+1. Understand the objective.
+2. Break the objective into smaller tasks.
+3. Search for information.
+4. Retrieve relevant documents.
+5. Call external tools.
+6. Analyze the results.
+7. Decide what to do next.
+8. Recover if something fails.
+9. Produce the final result.
+
+This is where **Agentic AI** becomes interesting.
+
+Agentic AI is not simply "a smarter chatbot."
+
+It is an approach to building AI-powered systems where a model participates in a controlled loop of **reasoning, decision-making, tool usage, observation, and action**.
+
+---
+
+## 1. From Chatbots to Agents
+
+Let's start with a traditional LLM application.
+
+The architecture is simple:
+
+```text
+User
+  │
+  ▼
+Prompt
+  │
+  ▼
+Large Language Model
+  │
+  ▼
+Response
