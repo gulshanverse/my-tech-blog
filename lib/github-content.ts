@@ -43,8 +43,12 @@ export async function listGithubArticlePaths() {
 }
 
 export async function writeGithubFile(path: string, content: string, message: string, sha?: string) {
+  return writeGithubBase64File(path, Buffer.from(content, "utf8").toString("base64"), message, sha);
+}
+
+export async function writeGithubBase64File(path: string, contentBase64: string, message: string, sha?: string) {
   const encodedPath = path.split("/").map(encodeURIComponent).join("/");
-  const body = await githubRequest<GithubResponse>(`/repos/${repo}/contents/${encodedPath}`, { method: "PUT", body: JSON.stringify({ message, content: Buffer.from(content, "utf8").toString("base64"), branch, ...(sha ? { sha } : {}) }) });
+  const body = await githubRequest<GithubResponse>(`/repos/${repo}/contents/${encodedPath}`, { method: "PUT", body: JSON.stringify({ message, content: contentBase64, branch, ...(sha ? { sha } : {}) }) });
   return { path: body.content?.path || path, sha: body.content?.sha || "" };
 }
 
