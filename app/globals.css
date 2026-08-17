@@ -595,8 +595,9 @@ body.author-route > .skip-link, body.author-route > .site-header, body.author-ro
 .author-stats > div { display: grid; gap: .4rem; background: var(--paper); padding: 1.25rem; }
 .author-stats span { color: var(--muted); font-family: var(--mono); font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; }
 .author-stats strong { color: var(--navy); font-size: 2rem; letter-spacing: -.06em; }
-.author-toolbar { display: flex; align-items: center; gap: .75rem; border-bottom: 1px solid var(--line); padding-bottom: 1rem; }
-.author-toolbar input { width: min(100%, 320px); margin-left: auto; }
+.author-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; border-bottom: 1px solid var(--line); padding-bottom: 1rem; }
+.author-search-field { min-width: min(100%, 250px); margin-left: auto; }
+.author-toolbar input { width: 100%; }
 .author-toolbar select { width: 160px; }
 .author-filters { display: flex; flex-wrap: wrap; gap: .35rem; }
 .author-filters button { border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); padding: .55rem .8rem; font-family: var(--mono); font-size: .64rem; font-weight: 800; text-transform: uppercase; }
@@ -611,6 +612,30 @@ body.author-route > .skip-link, body.author-route > .site-header, body.author-ro
 .status-published { background: #42805a; }
 .author-row-arrow { display: inline-flex; align-items: center; gap: .35rem; color: var(--muted); font-family: var(--mono); font-size: .65rem; text-transform: uppercase; }
 .author-empty { padding: 3rem 0; color: var(--muted); }
+.author-empty p { margin: .35rem 0; }
+.taxonomy-panel { margin-top: 2rem; }
+.taxonomy-body, .taxonomy-section { display: grid; gap: .55rem; }
+.taxonomy-body { margin-top: 1rem; }
+.taxonomy-section + .taxonomy-section { margin-top: 1rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+.taxonomy-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: .65rem; border-bottom: 1px solid var(--line); padding: .6rem 0; }
+.taxonomy-row span { display: grid; gap: .15rem; min-width: 0; }
+.taxonomy-row strong { overflow: hidden; color: var(--navy); text-overflow: ellipsis; white-space: nowrap; }
+.taxonomy-row small, .taxonomy-row b { color: var(--muted); font: 700 .65rem var(--mono); }
+.revision-history-body { display: grid; gap: 1rem; margin-top: 1rem; }
+.revision-list { display: grid; gap: .45rem; max-height: 280px; overflow: auto; }
+.revision-item { display: grid; gap: .2rem; border: 1px solid var(--line); border-radius: 8px; background: transparent; padding: .65rem; color: var(--ink); text-align: left; }
+.revision-item:hover, .revision-item.active { border-color: var(--gold); background: var(--warm-paper); }
+.revision-item strong { color: var(--navy); font-size: .75rem; }
+.revision-item span, .revision-item small { color: var(--muted); font-size: .7rem; }
+.revision-item small { font-family: var(--mono); }
+.revision-comparison { display: grid; gap: .7rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+.revision-comparison-heading { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.revision-comparison-heading > div { display: grid; gap: .25rem; min-width: 0; }
+.revision-comparison-heading strong { overflow: hidden; color: var(--navy); text-overflow: ellipsis; white-space: nowrap; }
+.revision-comparison pre { max-height: 360px; overflow: auto; margin: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--deep-navy); padding: .75rem; color: #d8e0ed; font: .68rem/1.55 var(--mono); white-space: pre-wrap; }
+.revision-line { display: block; }
+.revision-added { background: rgba(201, 162, 39, .18); color: #f4df8a; }
+.revision-removed { background: rgba(154, 78, 49, .2); color: #f0b5a0; }
 .author-editor-heading { align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 1rem; }
 .author-save-state { margin-right: auto; color: var(--muted); font-family: var(--mono); font-size: .66rem; text-transform: uppercase; }
 .author-save-state.is-saved { color: #42805a; }
@@ -662,8 +687,13 @@ body.author-route > .skip-link, body.author-route > .site-header, body.author-ro
   .author-heading .btn { width: 100%; justify-content: center; }
   .author-stats { grid-template-columns: 1fr; }
   .author-toolbar { align-items: stretch; flex-direction: column; }
+  .author-search-field { width: 100%; margin-left: 0; }
   .author-toolbar input { margin-left: 0; }
-  .author-toolbar select { width: 100%; }
+  .author-toolbar select, .author-toolbar .author-danger-button { width: 100%; }
+  .taxonomy-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .taxonomy-row .author-quiet-button { grid-column: 1 / -1; justify-content: center; }
+  .revision-comparison-heading { align-items: stretch; flex-direction: column; }
+  .revision-comparison-heading .author-danger-button { width: 100%; justify-content: center; }
   .author-article-row { grid-template-columns: 8px minmax(0, 1fr); }
   .author-row-arrow { grid-column: 2; }
   .author-field-grid, .author-sidebar { grid-template-columns: 1fr; }

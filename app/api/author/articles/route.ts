@@ -1,9 +1,10 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { hasAuthorSession } from "@/lib/author-auth";
-import { articlePath, draftToSource, getGithubArticles, inputFromSource, normalizeDraftInput, validateDraft } from "@/lib/author-articles";
-import { deleteGithubFile, getGithubFile, githubContentConfigured, writeGithubFile } from "@/lib/github-content";
+import { articlePath, draftToSource, getGithubArticles, inputFromSource, normalizeDraftInput, tagsFromInput, validateDraft } from "@/lib/author-articles";
+import { deleteGithubFile, getGithubFile, getGithubRevisionFile, getGithubRevisions, githubContentConfigured, writeGithubFile } from "@/lib/github-content";
 import { getCategory, parsePostSource } from "@/lib/content";
+import { categoryMeta, type CategorySlug } from "@/lib/site";
 
 function unauthorized() { return NextResponse.json({ error: "Author Studio access is required." }, { status: 401 }); }
 function unavailable() { return NextResponse.json({ error: "GitHub publishing is not configured on the server. Add the required private environment variables before using Author Studio mutations." }, { status: 503 }); }
@@ -20,9 +21,23 @@ export async function GET(request: Request) {
       if (!isArticlePath(path)) return NextResponse.json({ error: "Only article MDX files can be managed here." }, { status: 400 });
       const file = await getGithubFile(path);
       if (!file) return NextResponse.json({ error: "Article file was not found." }, { status: 404 });
+      if (url.searchParams.get("history") === "1") return NextResponse.json({ revisions: await getGithubRevisions(path) });
+      const revision = url.searchParams.get("revision");
+      if (revision) {
+        if (!/^[a-f0-9]{7,40}$/i.test(revision)) return NextResponse.json({ error: "Invalid revision identifier." }, { status: 400 });
+        const revisionFile = await getGithubRevisionFile(path, revision);
+        if (!revisionFile) return NextResponse.json({ error: "The selected revision was not found." }, { status: 404 });
+        return NextResponse.json({ path: revisionFile.path, revision, input: inputFromSource(revisionFile.path, revisionFile.content), source: revisionFile.content });
+      }
       return NextResponse.json({ path: file.path, sha: file.sha, input: inputFromSource(file.path, file.content) });
     }
     const articles = await getGithubArticles();
+    if (url.searchParams.get("mode") === "taxonomy") {
+      const categories = Object.values(categoryMeta).map((category) => ({ slug: category.slug, name: category.name, count: articles.filter(({ post }) => post.category === category.slug).length }));
+      const tagCounts = new Map<string, { label: string; count: number }>();
+      articles.forEach(({ post }) => post.tags.forEach((tag) => { const key = tag.trim().toLowerCase(); if (!key) return; const current = tagCounts.get(key); tagCounts.set(key, { label: current?.label || tag.trim(), count: (current?.count || 0) + 1 }); }));
+      return NextResponse.json({ categories, tags: Array.from(tagCounts.values()).sort((a, b) => a.label.localeCompare(b.label)) });
+    }
     return NextResponse.json({ articles: articles.map(({ post, path, sha }) => ({ post, path, sha })) });
   } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to read the GitHub content." }, { status: 502 }); }
 }
@@ -31,12 +46,44 @@ export async function POST(request: Request) {
   if (!(await hasAuthorSession())) return unauthorized();
   if (!githubContentConfigured()) return unavailable();
   try {
-    const body = await request.json() as { action?: string; input?: Record<string, unknown>; path?: string; newSlug?: string; paths?: string[] };
+    const body = await request.json() as { action?: string; input?: Record<string, unknown>; path?: string; newSlug?: string; paths?: string[]; oldTag?: string; newTag?: string; confirmed?: boolean; revisionSha?: string };
     if (body.action === "validate") {
       const input = normalizeDraftInput(body.input || {});
       const existingPaths = (await getGithubArticles()).map((article) => article.path);
       const validation = await validateDraft(input, existingPaths.filter((path) => path !== body.path));
       return NextResponse.json({ ok: true, validation });
+    }
+    if (body.action === "renameTag") {
+      const oldTag = String(body.oldTag || "").trim();
+      const newTag = String(body.newTag || "").trim();
+      if (!oldTag || !newTag || oldTag.length > 80 || newTag.length > 80 || /[\r\n]/.test(`${oldTag}${newTag}`)) return NextResponse.json({ error: "Tag names must be between 1 and 80 characters and stay on one line." }, { status: 400 });
+      const articles = await getGithubArticles();
+      let updated = 0;
+      for (const article of articles) {
+        if (!article.post.tags.some((tag) => tag.trim().toLowerCase() === oldTag.toLowerCase())) continue;
+        const input = normalizeDraftInput({ ...inputFromSource(article.path, article.source), tags: tagsFromInput(article.post.tags.map((tag) => tag.trim().toLowerCase() === oldTag.toLowerCase() ? newTag : tag).join(", ")).join(", ") });
+        const validation = await validateDraft(input, articles.map(({ path }) => path).filter((path) => path !== article.path));
+        if (!validation.valid) return NextResponse.json({ error: `Cannot rename tag in ${article.post.title}: ${validation.errors.join(" ")}` }, { status: 400 });
+        await writeGithubFile(article.path, draftToSource(input), `chore: rename tag ${oldTag} to ${newTag}`, article.sha);
+        updated += 1;
+      }
+      return NextResponse.json({ ok: true, updated });
+    }
+    if (body.action === "restore") {
+      if (!body.path || !body.revisionSha || !isArticlePath(body.path) || !/^[a-f0-9]{7,40}$/i.test(body.revisionSha)) return NextResponse.json({ error: "A valid article path and revision are required." }, { status: 400 });
+      const current = await getGithubFile(body.path);
+      const revisionFile = await getGithubRevisionFile(body.path, body.revisionSha);
+      if (!current || !revisionFile) return NextResponse.json({ error: "The article or selected revision was not found." }, { status: 404 });
+      const category = body.path.split("/")[2];
+      const slug = body.path.split("/").pop()!.replace(/\.mdx$/, "");
+      const currentPost = parsePostSource(current.content, category as never, slug);
+      const input = normalizeDraftInput({ ...inputFromSource(body.path, revisionFile.content), status: currentPost.status, slug, category: category as CategorySlug });
+      const validation = await validateDraft(input);
+      if (!validation.valid) return NextResponse.json({ error: validation.errors.join(" "), validation }, { status: 400 });
+      if (currentPost.status === "published" && !body.confirmed) return NextResponse.json({ error: "Restoring this published article requires explicit confirmation.", requiresConfirmation: true }, { status: 409 });
+      const result = await writeGithubFile(body.path, draftToSource(input), `chore: restore article revision`, current.sha);
+      if (input.status === "published") refreshPublicContent();
+      return NextResponse.json({ ok: true, path: body.path, sha: result.sha, input });
     }
     if (body.action === "bulkDelete") {
       const paths = Array.isArray(body.paths) ? [...new Set(body.paths)] : [];
@@ -75,7 +122,7 @@ export async function POST(request: Request) {
     const result = await writeGithubFile(targetPath, draftToSource(input), `${input.status === "published" ? "publish" : "draft"}: ${input.title}`);
     if (input.status === "published") refreshPublicContent();
     return NextResponse.json({ ok: true, path: targetPath, sha: result.sha, published: input.status === "published" });
-  } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to save the article." }, { status: 502 }); }
+    } catch (error) { const message = error instanceof Error ? error.message : "Unable to save the article."; const conflict = message.toLowerCase().includes("does not match") || message.toLowerCase().includes("sha"); return NextResponse.json({ error: conflict ? "This article changed on GitHub since you opened it." : message }, { status: conflict ? 409 : 502 }); }
 }
 
 export async function PUT(request: Request) {
@@ -98,7 +145,7 @@ export async function PUT(request: Request) {
     if (targetPath !== body.path) await deleteGithubFile(body.path, current.sha, `chore: move article ${currentPost.slug}`);
     if (input.status === "published") refreshPublicContent();
     return NextResponse.json({ ok: true, path: targetPath, sha: result.sha, published: input.status === "published" });
-  } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to update the article." }, { status: 502 }); }
+  } catch (error) { const message = error instanceof Error ? error.message : "Unable to update the article."; const conflict = message.toLowerCase().includes("does not match") || message.toLowerCase().includes("sha"); return NextResponse.json({ error: conflict ? "This article changed on GitHub since you opened it." : message }, { status: conflict ? 409 : 502 }); }
 }
 
 export async function DELETE(request: Request) {

@@ -38,7 +38,8 @@ export function articlePath(category: CategorySlug, slug: string) {
 }
 
 export function tagsFromInput(tags: string) {
-  return Array.from(new Set(tags.split(/[,\n]/).map((tag) => tag.trim()).filter(Boolean)));
+  const seen = new Set<string>();
+  return tags.split(/[,\n]/).map((tag) => tag.trim()).filter(Boolean).filter((tag) => { const key = tag.toLowerCase(); if (seen.has(key)) return false; seen.add(key); return true; });
 }
 
 export function tagsToInput(tags: string[]) {
