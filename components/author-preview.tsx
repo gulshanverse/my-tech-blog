@@ -1,0 +1,18 @@
+"use client";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { MDXRemote } from "next-mdx-remote";
+import { RelatedArticles } from "@/components/related-articles";
+import { RelatedTopics } from "@/components/related-topics";
+import { TableOfContents } from "@/components/toc";
+import { mdxComponents } from "@/components/mdx-components";
+import type { RelatedRecommendation, TocItem } from "@/lib/content";
+import type { ArticleDraftInput } from "@/lib/author-articles";
+import { siteConfig } from "@/lib/site";
+type PreviewData = { serialized: { compiledSource: string; scope: Record<string, unknown>; frontmatter: Record<string, unknown> }; toc: TocItem[]; category: { name?: string; shortName?: string }; recommendations: RelatedRecommendation[] };
+export function AuthorPreview({ input }: { input: ArticleDraftInput }) {
+  const [data, setData] = useState<PreviewData | null>(null);
+  const [error, setError] = useState("");
+  useEffect(() => { let active = true; fetch("/api/author/preview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) }).then(async (response) => { const body = await response.json(); if (!response.ok) throw new Error(body.error || "Preview compilation failed."); if (active) setData(body); }).catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : "Preview compilation failed."); }); return () => { active = false; }; }, [input]);
+  return <><div className="author-preview-banner"><span>Preview mode</span><span>This draft is not public or indexable.</span></div>{error && <p className="form-error author-preview-error" role="alert">{error}</p>}{data ? <article className="article-shell author-preview-shell"><div className="container"><header className="article-header"><div className="eyebrow">{data.category.name}</div><h1>{input.title || "Untitled article"}</h1><p className="article-dek">{input.description || "Add an excerpt to see it here."}</p><div className="article-meta"><span className="author-dot" aria-hidden="true" /><span>Gulshan Kumar</span><span>·</span><span>{input.status === "published" ? "Published" : "Draft preview"}</span><span>·</span><span>{input.readingTime || "Reading time not set"}</span>{input.difficulty && <><span>·</span><span>{input.difficulty}</span></>}</div></header><div className="article-cover"><Image src={input.coverImage || "/images/cover-editorial.svg"} alt={input.coverAlt || `Editorial visual representing ${input.title}`} fill sizes="(max-width: 900px) 100vw, 1100px" className="cover-image" /><span className="article-cover-label">{data.category.shortName} / preview</span></div><div className="article-layout"><TableOfContents items={data.toc} /><div className="article-prose"><MDXRemote {...data.serialized} components={mdxComponents} /><div className="article-footer"><div className="author-card"><div className="author-avatar">GK</div><div><h3>Gulshan Kumar</h3><p>3rd Year B.Tech Undergraduate in Information Technology. Writing about AI, software engineering, projects, and technology.</p><div className="author-links"><a href={siteConfig.links.github} target="_blank" rel="noreferrer">GitHub</a><a href="/about">About</a><a href={siteConfig.links.email}>Email</a></div></div></div><RelatedTopics categoryLabel={data.category.shortName || input.category} categorySlug={input.category} tags={input.tags.split(/[,\n]/).map((tag) => tag.trim()).filter(Boolean)} /><RelatedArticles recommendations={data.recommendations} /></div></div></div></div></article> : <div className="author-preview-loading">Compiling the same MDX renderer used by the public article…</div>}</>;
+}

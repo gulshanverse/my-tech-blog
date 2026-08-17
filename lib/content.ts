@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { categoryMeta, type CategorySlug } from "./site";
+export { formatDate } from "./format";
 
 export type PostStatus = "draft" | "published";
 
@@ -17,6 +18,7 @@ export type Post = {
   readingTime: string;
   difficulty?: string;
   coverImage: string;
+  coverAlt?: string;
   featured: boolean;
   status: PostStatus;
   seoTitle?: string;
@@ -33,12 +35,10 @@ function slugify(value: string) {
   return value.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-");
 }
 
-function readPost(filePath: string, category: CategorySlug): Post {
-  const source = fs.readFileSync(filePath, "utf8");
+export function parsePostSource(source: string, category: CategorySlug, slug: string): Post {
   const parsed = matter(source);
   const data = parsed.data as Record<string, unknown>;
   const words = parsed.content.trim().split(/\s+/).filter(Boolean).length;
-  const slug = path.basename(filePath, path.extname(filePath));
 
   return {
     slug,
@@ -52,12 +52,17 @@ function readPost(filePath: string, category: CategorySlug): Post {
     readingTime: String(data.readingTime || `${Math.max(1, Math.ceil(words / 200))} min read`),
     difficulty: data.difficulty ? String(data.difficulty) : data.level ? String(data.level) : undefined,
     coverImage: String(data.coverImage || "/images/cover-editorial.svg"),
+    coverAlt: data.coverAlt ? String(data.coverAlt) : undefined,
     featured: Boolean(data.featured),
     status: String(data.status || "published") as PostStatus,
     seoTitle: data.seoTitle ? String(data.seoTitle) : undefined,
     seoDescription: data.seoDescription ? String(data.seoDescription) : undefined,
     content: parsed.content,
   };
+}
+
+function readPost(filePath: string, category: CategorySlug): Post {
+  return parsePostSource(fs.readFileSync(filePath, "utf8"), category, path.basename(filePath, path.extname(filePath)));
 }
 
 export function getAllPosts(options: { includeDrafts?: boolean } = {}) {
@@ -123,10 +128,6 @@ export function getToc(content: string): TocItem[] {
     const slug = occurrence === 0 ? baseSlug : `${baseSlug}-${occurrence}`;
     return [{ depth: match[1].length as 2 | 3, text, slug }];
   });
-}
-
-export function formatDate(date: string) {
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(date));
 }
 
 export function getCategory(category: string) {

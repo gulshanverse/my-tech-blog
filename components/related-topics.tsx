@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { CategorySlug } from "@/lib/site";
-import { getTopicHref } from "@/lib/content";
+import { getTopicHref } from "@/lib/topic-links";
 
 type RelatedTopicsProps = {
   categoryLabel: string;

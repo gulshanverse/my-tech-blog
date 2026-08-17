@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import { categoryMeta, type CategorySlug } from "@/lib/site";
 import type { RelatedRecommendation } from "@/lib/content";
-import { formatDate } from "@/lib/content";
+import { formatDate } from "@/lib/format";
 
 export function RelatedArticles({ recommendations }: { recommendations: RelatedRecommendation[] }) {
   if (!recommendations.length) return null;
