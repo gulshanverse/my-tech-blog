@@ -31,12 +31,28 @@ export async function POST(request: Request) {
   if (!(await hasAuthorSession())) return unauthorized();
   if (!githubContentConfigured()) return unavailable();
   try {
-    const body = await request.json() as { action?: string; input?: Record<string, unknown>; path?: string; newSlug?: string };
+    const body = await request.json() as { action?: string; input?: Record<string, unknown>; path?: string; newSlug?: string; paths?: string[] };
     if (body.action === "validate") {
       const input = normalizeDraftInput(body.input || {});
       const existingPaths = (await getGithubArticles()).map((article) => article.path);
       const validation = await validateDraft(input, existingPaths.filter((path) => path !== body.path));
       return NextResponse.json({ ok: true, validation });
+    }
+    if (body.action === "bulkDelete") {
+      const paths = Array.isArray(body.paths) ? [...new Set(body.paths)] : [];
+      if (!paths.length || paths.length > 50 || paths.some((path) => !isArticlePath(path))) return NextResponse.json({ error: "Select between 1 and 50 valid article drafts." }, { status: 400 });
+      let deleted = 0;
+      for (const path of paths) {
+        const current = await getGithubFile(path);
+        if (!current) continue;
+        const category = path.split("/")[2];
+        const slug = path.split("/").pop()!.replace(/\.mdx$/, "");
+        const post = parsePostSource(current.content, category as never, slug);
+        if (post.status !== "draft") continue;
+        await deleteGithubFile(path, current.sha, `delete: draft ${slug}`);
+        deleted += 1;
+      }
+      return NextResponse.json({ ok: true, deleted });
     }
     if (body.action === "duplicate") {
       if (!body.path || !body.newSlug || !isArticlePath(body.path)) return NextResponse.json({ error: "A valid source article and new slug are required." }, { status: 400 });
