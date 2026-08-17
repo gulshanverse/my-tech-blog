@@ -9,6 +9,7 @@ import { CoverImageUpload } from "@/components/cover-image-upload";
 import { RevisionHistory } from "@/components/revision-history";
 import { TaxonomyPanel } from "@/components/taxonomy-panel";
 import { categoryMeta, type CategorySlug } from "@/lib/site";
+import { canAutoSaveDraft, scheduleAutoSave } from "@/lib/author-autosave";
 import type { ArticleDraftInput } from "@/lib/author-articles";
 
 type ListedArticle = { post: { slug: string; title: string; description: string; date: string; updatedAt?: string; category: CategorySlug; tags: string[]; readingTime: string; status: "draft" | "published"; coverImage: string; coverAlt?: string; difficulty?: string; featured: boolean; content: string }; path: string; sha: string };
@@ -53,7 +54,7 @@ export function AuthorStudio({ initialView = "dashboard" }: Props) {
   const autoSaveRef = useRef(autoSaveDraft);
   useEffect(() => { autoSaveRef.current = autoSaveDraft; }, [autoSaveDraft]);
   useEffect(() => { loadArticles(); const saved = window.localStorage.getItem("gulshan-author-draft"); if (saved && initialView === "editor") { try { setInput(JSON.parse(saved)); setNotice("Recovered a local unsaved draft."); setAutoSaveState("Saved locally"); } catch { window.localStorage.removeItem("gulshan-author-draft"); } } }, [initialView]);
-  useEffect(() => { if (view !== "editor") return; setSaveState("Unsaved changes"); setAutoSaveState("Unsaved changes"); setAutoSaveError(""); const timer = window.setTimeout(() => { window.localStorage.setItem("gulshan-author-draft", JSON.stringify(input)); setAutoSaveState("Saved locally"); if (input.status === "draft" && input.title.trim() && input.slug.trim() && input.description.trim() && input.tags.trim() && input.readingTime.trim() && input.content.trim()) void autoSaveRef.current(); }, 900); return () => window.clearTimeout(timer); }, [input, view]);
+  useEffect(() => { if (view !== "editor") return; setSaveState("Unsaved changes"); setAutoSaveState("Unsaved changes"); setAutoSaveError(""); const scheduler = scheduleAutoSave(() => { window.localStorage.setItem("gulshan-author-draft", JSON.stringify(input)); setAutoSaveState("Saved locally"); if (canAutoSaveDraft(input)) void autoSaveRef.current(); }); scheduler.schedule(); return scheduler.cancel; }, [input, view]);
 
   const availableTags = useMemo(() => Array.from(new Set(articles.flatMap(({ post }) => post.tags))).sort((a, b) => a.localeCompare(b)), [articles]);
   const filteredArticles = useMemo(() => articles.filter(({ post }) => {
