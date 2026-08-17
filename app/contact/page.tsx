@@ -28,12 +28,14 @@ export default function ContactPage() {
               <p className="contact-lede">Whether you found a useful idea in the archive, are working through a similar technical problem, or have a project worth discussing, send a note. I read every message.</p>
               <div className="contact-direct">
                 <p className="contact-direct-label">You can also reach me directly at</p>
-                <a className="contact-email" href={siteConfig.links.email}><Mail size={16} aria-hidden="true" />gulshankumar.dev@gmail.com<ArrowUpRight size={15} aria-hidden="true" /></a>
+                <a className="contact-email" href={siteConfig.links.email}><Mail size={16} aria-hidden="true" />{siteConfig.emailAddress}<ArrowUpRight size={15} aria-hidden="true" /></a>
               </div>
               <div className="contact-socials" aria-label="Social links">
                 <a href={siteConfig.links.github} target="_blank" rel="noreferrer"><Github size={16} aria-hidden="true" />GitHub<ArrowUpRight size={13} aria-hidden="true" /></a>
                 <a href={siteConfig.links.linkedin} target="_blank" rel="noreferrer"><Linkedin size={16} aria-hidden="true" />LinkedIn<ArrowUpRight size={13} aria-hidden="true" /></a>
                 <a href={siteConfig.links.x} target="_blank" rel="noreferrer" aria-label="X, formerly Twitter">X<ArrowUpRight size={13} aria-hidden="true" /></a>
+                <a href={siteConfig.links.reddit} target="_blank" rel="noreferrer">Reddit<ArrowUpRight size={13} aria-hidden="true" /></a>
+                <a href={siteConfig.links.leetcode} target="_blank" rel="noreferrer">LeetCode<ArrowUpRight size={13} aria-hidden="true" /></a>
               </div>
             </div>
             <div className="contact-form-card">
