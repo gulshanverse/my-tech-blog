@@ -52,6 +52,40 @@ test.describe("public regression smoke", () => {
     }
   });
 
+  test("live TOC links, active state, sticky desktop behavior, and mobile navigation work", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/blog/the-future-of-technology-when-software-starts-to-think-and-act");
+    const toc = page.locator(".toc");
+    await expect(toc).toBeVisible();
+    await expect(toc.locator("a")).toHaveCount(28);
+    expect(await toc.evaluate((element) => getComputedStyle(element).position)).toBe("sticky");
+
+    const secondLink = toc.locator("a").nth(1);
+    const secondHref = await secondLink.getAttribute("href");
+    expect(secondHref).toMatch(/^#/);
+    const secondId = secondHref!.slice(1);
+    expect(await page.locator(`[id="${secondId}"]`).count()).toBe(1);
+    await secondLink.click();
+    await expect(page).toHaveURL(new RegExp(`#${secondId}$`));
+    await expect(toc.locator(`a[href="#${secondId}"]`)).toHaveAttribute("aria-current", "location");
+
+    await page.evaluate((id) => document.getElementById(id)?.scrollIntoView({ block: "start", behavior: "instant" }), secondId);
+    await page.waitForTimeout(100);
+    await expect(toc.locator(`a[href="#${secondId}"]`)).toHaveAttribute("aria-current", "location");
+
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto("/blog/the-future-of-technology-when-software-starts-to-think-and-act");
+    await expect(page.locator(".toc-toggle")).toBeVisible();
+    await expect(page.locator(".toc-title")).toBeHidden();
+    await page.locator(".toc-toggle").click();
+    await expect(page.locator(".toc")).toHaveClass(/toc--open/);
+    await expect(page.locator(".toc ol")).toBeVisible();
+    await page.locator(".toc a").nth(1).click();
+    await expect(page.locator(".toc")).not.toHaveClass(/toc--open/);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    expect(await page.evaluate(() => document.body.scrollWidth <= window.innerWidth)).toBe(true);
+  });
+
   test("public homepage keeps its primary navigation and metadata", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("link", { name: "Home" }).first()).toBeVisible();

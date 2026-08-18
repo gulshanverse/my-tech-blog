@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import GithubSlugger from "github-slugger";
 import { categoryMeta, type CategorySlug } from "./site";
 import { parseReadingTime, normalizeDifficulty } from "./article-metadata";
 export { formatDate } from "./format";
@@ -33,8 +34,8 @@ export type TocItem = { depth: 2 | 3; text: string; slug: string };
 const contentRoot = path.join(process.cwd(), "content", "blog");
 const categorySlugs = Object.keys(categoryMeta) as CategorySlug[];
 
-function slugify(value: string) {
-  return value.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-");
+function createHeadingSlugger() {
+  return new GithubSlugger();
 }
 
 export function parsePostSource(source: string, category: CategorySlug, slug: string): Post {
@@ -110,7 +111,7 @@ export function getRelatedPosts(post: Post, limit = 3) {
 }
 
 export function getToc(content: string): TocItem[] {
-  const usedSlugs = new Map<string, number>();
+  const slugger = createHeadingSlugger();
   let insideFence = false;
 
   return content.split("\n").flatMap((line) => {
@@ -124,10 +125,7 @@ export function getToc(content: string): TocItem[] {
     const match = /^(##|###)\s+(.+?)\s*$/.exec(line);
     if (!match) return [];
     const text = match[2].replace(/[`*_]/g, "");
-    const baseSlug = slugify(text) || "section";
-    const occurrence = usedSlugs.get(baseSlug) || 0;
-    usedSlugs.set(baseSlug, occurrence + 1);
-    const slug = occurrence === 0 ? baseSlug : `${baseSlug}-${occurrence}`;
+    const slug = slugger.slug(text);
     return [{ depth: match[1].length as 2 | 3, text, slug }];
   });
 }

@@ -980,3 +980,6 @@ body.author-route > .skip-link, body.author-route > .site-header, body.author-ro
 .article-table-wrapper { width: 100%; max-width: 100%; min-width: 0; margin: 2rem 0; overflow-x: auto; overscroll-behavior: contain; }
 .article-prose .article-table-wrapper table { width: 100%; min-width: max-content; margin: 0; }
 .article-prose .code-shell { width: 100%; max-width: 100%; min-width: 0; }
+.toc a { min-width: 0; }
+.toc-link-text { min-width: 0; overflow-wrap: anywhere; }
+.toc-link-text--nested { padding-left: .65rem; font-size: .72rem; }
