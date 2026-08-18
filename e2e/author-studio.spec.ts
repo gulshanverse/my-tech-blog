@@ -85,6 +85,15 @@ test.describe("authenticated Author Studio workflow", () => {
     await expect(page.getByRole("heading", { name: "Analytics Center" })).toBeVisible();
   });
 
+  test("dashboard stays publishing-focused with one shared private header", async ({ page }) => {
+    await expect(page.locator(".author-topbar")).toHaveCount(1);
+    await expect(page.locator(".author-brand-mark")).toBeVisible();
+    await expect(page.getByRole("button", { name: /Sign out/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /View Analytics/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Top search queries" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Analytics Center" })).toHaveCount(0);
+  });
+
   test("dashboard content intelligence is derived and visible", async ({ page }) => {
     await expect(page.getByRole("heading", { name: "Content overview" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Search performance" })).toBeVisible();
@@ -102,6 +111,25 @@ test.describe("authenticated Author Studio workflow", () => {
     await taxonomySearch.fill("no-such-taxonomy-value");
     await expect(page.getByText(/No categories or tags match/i)).toBeVisible();
   });
+
+  test("analytics has one shared header and returns to Author Studio", async ({ page }) => {
+    await page.goto("/author/analytics");
+    await expect(page.locator(".author-topbar")).toHaveCount(1);
+    await expect(page.getByRole("link", { name: /Author Studio/i }).first()).toBeVisible();
+    await page.getByRole("link", { name: /Author Studio/i }).first().click();
+    await expect(page).toHaveURL(/\/author$/);
+  });
+
+  for (const width of [320, 375, 768, 1024, 1440]) {
+    test(`analytics remains stable and overflow-free at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/author/analytics");
+      await expect(page.locator(".author-topbar")).toHaveCount(1);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      await expect(page.getByRole("link", { name: /View site/i })).toBeVisible();
+      await expect(page.getByRole("button", { name: /Sign out/i })).toBeVisible();
+    });
+  }
 
   test("analytics range, refresh, source status, and mobile layout work", async ({ page }) => {
     await page.goto("/author/analytics");

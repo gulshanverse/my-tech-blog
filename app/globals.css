@@ -923,3 +923,26 @@ body.author-route > .skip-link, body.author-route > .site-header, body.author-ro
 .intelligence-compact-metrics span { color: var(--muted); font: .65rem var(--mono); text-transform: uppercase; }
 .intelligence-compact-metrics strong { color: var(--navy); font-size: 1rem; margin-right: .2rem; }
 .intelligence-connected { align-items: center; }
+
+/* Stable private shell geometry */
+.author-workspace { overflow-x: clip; }
+.author-topbar { box-sizing: border-box; min-height: 66px; }
+.author-brand { display: flex; min-width: 0; align-items: center; gap: .65rem; }
+.author-brand-mark { display: inline-grid; flex: 0 0 30px; width: 30px; height: 30px; place-items: center; border-radius: 8px; background: var(--navy); color: var(--gold); font: 800 .62rem var(--mono); letter-spacing: -.08em; }
+.author-topbar-context { display: block; min-width: 0; line-height: 1.25; white-space: nowrap; }
+.author-top-actions { min-height: 38px; }
+.author-top-actions .author-quiet-button, .author-heading-actions .author-quiet-button, .author-heading-actions .btn { min-height: 38px; box-sizing: border-box; white-space: nowrap; }
+.author-heading-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .55rem; }
+.author-preview-nav { width: min(var(--container), calc(100% - 2.5rem)); margin: 1rem auto 0; }
+.author-back-link { display: inline-flex; align-items: center; gap: .35rem; margin-bottom: .8rem; color: var(--muted); font: 800 .65rem var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+.author-back-link:hover { color: var(--navy); }
+.analytics-workspace .author-topbar { flex: 0 0 auto; }
+@media (max-width: 620px) {
+  .author-topbar { min-height: 122px; align-items: stretch; justify-content: space-between; }
+  .author-brand { width: 100%; }
+  .author-top-actions { width: 100%; justify-content: flex-start; }
+  .author-top-actions .author-quiet-button { flex: 0 0 auto; }
+  .author-heading-actions { width: 100%; justify-content: flex-start; }
+  .author-heading-actions .btn, .author-heading-actions .author-quiet-button { flex: 1 1 10rem; justify-content: center; }
+  .author-preview-nav { margin-top: .75rem; }
+}
