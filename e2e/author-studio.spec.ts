@@ -30,6 +30,8 @@ test.describe("private route protection", () => {
     await expect(page).toHaveURL(/\/author\/login$/);
     await page.goto("/author/editor");
     await expect(page).toHaveURL(/\/author\/login$/);
+    await page.goto("/author/analytics");
+    await expect(page).toHaveURL(/\/author\/login$/);
   });
 
   for (const width of [320, 375, 768, 1024, 1440]) {
@@ -75,6 +77,14 @@ test.describe("authenticated Author Studio workflow", () => {
     await expect(page.getByRole("button", { name: /Agentic AI Explained/i }).first()).toBeVisible();
   });
 
+  test("dashboard links to the separate analytics center", async ({ page }) => {
+    const analyticsLink = page.getByRole("link", { name: /View analytics/i });
+    await expect(analyticsLink).toBeVisible();
+    await analyticsLink.click();
+    await expect(page).toHaveURL(/\/author\/analytics$/);
+    await expect(page.getByRole("heading", { name: "Analytics Center" })).toBeVisible();
+  });
+
   test("dashboard content intelligence is derived and visible", async ({ page }) => {
     await expect(page.getByRole("heading", { name: "Content overview" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Search performance" })).toBeVisible();
@@ -91,6 +101,17 @@ test.describe("authenticated Author Studio workflow", () => {
     await expect(page.getByText(/AI & Machine Learning/i)).toBeVisible();
     await taxonomySearch.fill("no-such-taxonomy-value");
     await expect(page.getByText(/No categories or tags match/i)).toBeVisible();
+  });
+
+  test("analytics range, refresh, source status, and mobile layout work", async ({ page }) => {
+    await page.goto("/author/analytics");
+    await expect(page.getByRole("heading", { name: "Analytics Center" })).toBeVisible();
+    const range = page.getByRole("combobox", { name: "Analytics date range" });
+    await range.selectOption("7d");
+    await expect(range).toHaveValue("7d");
+    await expect(page.getByRole("button", { name: /Refresh data|Refreshing/i })).toBeVisible();
+    await expect(page.getByText(/Google Search Console/i).first()).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   });
 
   test("editor quality checklist and metrics are informational", async ({ page }) => {
