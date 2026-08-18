@@ -15,6 +15,43 @@ test.describe("public regression smoke", () => {
     });
   }
 
+  test("public article layouts keep the canonical content width across old and new articles", async ({ page }) => {
+    const articles = [
+      { slug: "agentic-ai-explained", expectsToc: false, expectsTable: false },
+      { slug: "the-future-of-technology-when-software-starts-to-think-and-act", expectsToc: true, expectsTable: false },
+      { slug: "understanding-rag-systems", expectsToc: true, expectsTable: false },
+      { slug: "how-to-read-a-research-paper-as-an-engineer", expectsToc: true, expectsTable: true },
+    ];
+    for (const width of [320, 375, 768, 1024, 1280, 1440, 1920]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const article of articles) {
+        const response = await page.goto(`/blog/${article.slug}`);
+        expect(response?.status()).toBe(200);
+        const metrics = await page.evaluate(() => {
+          const layout = document.querySelector<HTMLElement>(".article-layout");
+          const prose = document.querySelector<HTMLElement>(".article-prose");
+          const code = document.querySelector<HTMLElement>(".code-shell");
+          const rect = (element: HTMLElement | null) => element ? { width: element.getBoundingClientRect().width, x: element.getBoundingClientRect().x, scrollWidth: element.scrollWidth } : null;
+          return { layout: rect(layout), prose: rect(prose), code: rect(code), grid: layout ? getComputedStyle(layout).gridTemplateColumns : "", toc: Boolean(document.querySelector(".toc")), tableWrapper: Boolean(document.querySelector(".article-table-wrapper")), documentWidth: document.documentElement.scrollWidth, bodyWidth: document.body.scrollWidth, viewport: window.innerWidth };
+        });
+        expect(metrics.layout).not.toBeNull();
+        expect(metrics.prose).not.toBeNull();
+        expect(metrics.documentWidth).toBeLessThanOrEqual(metrics.viewport);
+        expect(metrics.bodyWidth).toBeLessThanOrEqual(metrics.viewport);
+        if (width >= 900) {
+          expect(metrics.prose!.width).toBeGreaterThanOrEqual(700);
+          expect(metrics.layout!.width).toBeGreaterThanOrEqual(Math.min(1180, width - 32));
+          expect(metrics.toc).toBe(article.expectsToc);
+          expect(metrics.grid).toContain(article.expectsToc ? "210px" : "710px");
+        } else {
+          expect(metrics.prose!.width).toBeGreaterThan(250);
+        }
+        if (metrics.code) expect(metrics.code.width).toBe(metrics.prose!.width);
+        expect(metrics.tableWrapper).toBe(Boolean(article.expectsTable));
+      }
+    }
+  });
+
   test("public homepage keeps its primary navigation and metadata", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("link", { name: "Home" }).first()).toBeVisible();

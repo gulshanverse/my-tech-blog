@@ -973,3 +973,10 @@ body.author-route > .skip-link, body.author-route > .site-header, body.author-ro
 .related-editorial-list > a strong { color: var(--navy); }
 .related-editorial-list > a small { margin-top: .2rem; line-height: 1.35; }
 .author-timeline-item strong, .recently-updated-list strong { display: block; min-width: 0; max-width: 100%; overflow-wrap: anywhere; word-break: break-word; white-space: normal; overflow: visible; text-overflow: clip; }
+
+/* Canonical article layout boundaries */
+.article-layout > .article-prose { width: 100%; max-width: 100%; }
+.article-layout--full { grid-template-columns: minmax(0, 710px); }
+.article-table-wrapper { width: 100%; max-width: 100%; min-width: 0; margin: 2rem 0; overflow-x: auto; overscroll-behavior: contain; }
+.article-prose .article-table-wrapper table { width: 100%; min-width: max-content; margin: 0; }
+.article-prose .code-shell { width: 100%; max-width: 100%; min-width: 0; }
