@@ -1,4 +1,4 @@
-import type { ArticleDraftInput } from "@/lib/author-articles";
+import type { ArticleDraftInput } from "@/lib/article-draft";
 import type { Post } from "@/lib/content";
 import { parseReadingTime } from "@/lib/article-metadata";
 
@@ -98,9 +98,10 @@ export function getTitleSimilarity(title: string, otherTitles: string[], thresho
   return best;
 }
 
-export function getRelatedEditorialArticles(article: EditorialArticle, candidates: EditorialArticle[], limit = 3) {
-  return candidates.filter((candidate) => candidate.slug !== article.slug && candidate.status === "published").map((candidate) => {
-    const sharedTags = candidate.tags.filter((tag) => article.tags.some((other) => other.toLowerCase() === tag.toLowerCase()));
+export function getRelatedEditorialArticles(article: ArticleSource, candidates: EditorialArticle[], limit = 3) {
+  const articleTags = tagsFromArticle(article);
+  return candidates.filter((candidate) => candidate.slug !== text(article.slug) && candidate.status === "published").map((candidate) => {
+    const sharedTags = tagsFromArticle(candidate).filter((tag) => articleTags.some((other) => other.toLowerCase() === tag.toLowerCase()));
     const sameCategory = candidate.category === article.category;
     const score = (sameCategory ? 8 : 0) + sharedTags.length * 3 + (candidate.featured ? 1 : 0);
     return { article: candidate, score, reason: sameCategory ? "Same category" : sharedTags.length ? "Shared tag" : "Archive match", sharedTags };

@@ -10,9 +10,30 @@ describe("Author Studio article helpers", () => {
     expect(tagsFromInput("RAG, rag, Rag, LLM, LLM")).toEqual(["RAG", "LLM"]);
   });
 
+  it("normalizes a legacy published article into safe editor controls", async () => {
+    const { normalizeDraftInput } = await import("@/lib/author-articles");
+    const input = normalizeDraftInput({ title: "Agentic AI Explained", slug: "agentic-ai-explained", category: "ai", tags: ["AI Agents", "RAG"], description: "An article description", readingTime: "14 min read", difficulty: "Intermediate", status: "published", coverImage: "/images/articles/agentic-ai-explained.png", coverAlt: "Agentic AI", content: "## Tools\n\nContent.", featured: false });
+    expect(input).toMatchObject({ slug: "agentic-ai-explained", category: "ai", tags: "AI Agents, RAG", readingTime: "14", difficulty: "Intermediate", status: "published", coverImage: "/images/articles/agentic-ai-explained.png" });
+  });
+
+  it("keeps unsupported difficulty visible to validation without an unsafe select value", async () => {
+    const { normalizeDraftInput, validateDraft } = await import("@/lib/author-articles");
+    const input = normalizeDraftInput({ ...({ title: "T", slug: "t", category: "ai", tags: "RAG", description: "Description", readingTime: 2, status: "draft", content: "Content", featured: false }), difficulty: "Expert" });
+    expect(input.difficulty).toBe("");
+    expect(input.invalidDifficulty).toBe("Expert");
+    await expect(validateDraft(input)).resolves.toMatchObject({ valid: false, errors: expect.arrayContaining(["Difficulty must be Beginner, Intermediate, or Advanced."]) });
+  });
+
   it("generates safe category and slug paths", async () => {
     const { articlePath } = await import("@/lib/author-articles");
     expect(articlePath("ai", "understanding-rag")).toBe("content/blog/ai/understanding-rag.mdx");
+  });
+
+  it("scores related editorial articles when the current draft stores tags as a string", async () => {
+    const { getRelatedEditorialArticles } = await import("@/lib/article-intelligence");
+    const related = getRelatedEditorialArticles({ slug: "current", title: "Current", description: "", date: "2026-08-18", updatedAt: "", category: "ai", tags: "RAG, agents", readingTime: "2", difficulty: "", status: "draft", content: "", coverImage: "", coverAlt: "", featured: false }, [{ slug: "related", title: "Related", description: "", date: "2026-08-17", category: "ai", tags: ["RAG"], readingTime: 2, status: "published", content: "", coverImage: "", featured: false }]);
+    expect(related[0]?.article.slug).toBe("related");
+    expect(related[0]?.sharedTags).toEqual(["RAG"]);
   });
 
   it("keeps published metadata in serialized frontmatter and validates MDX", async () => {

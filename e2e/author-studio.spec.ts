@@ -65,6 +65,57 @@ test.describe("authenticated Author Studio workflow", () => {
     await expect(page).toHaveURL(/\/author$/);
   });
 
+  test("exact legacy published editor path loads without client exceptions", async ({ page }) => {
+    const pageErrors: string[] = [];
+    const consoleErrors: string[] = [];
+    const failedRequests: string[] = [];
+    page.on("pageerror", (error) => pageErrors.push(error.message));
+    page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
+    page.on("requestfailed", (request) => failedRequests.push(`${request.method()} ${request.url()} ${request.failure()?.errorText || "failed"}`));
+    const requestedPath = "content/blog/ai/agentic-ai-explained.mdx";
+    await page.goto(`/author/editor?path=${encodeURIComponent(requestedPath)}`);
+    await expect(page.getByLabel("Title")).toHaveValue("Agentic AI Explained: How AI Agents Think, Use Tools, and Complete Tasks");
+    await expect(page.getByLabel("Slug")).toHaveValue("agentic-ai-explained");
+    await expect(page.getByLabel("Category")).toHaveValue("ai");
+    await expect(page.getByRole("spinbutton", { name: "Reading time in minutes" })).toHaveValue("14");
+    await expect(page.getByRole("combobox", { name: "Difficulty" })).toHaveValue("Intermediate");
+    await expect(page.getByRole("heading", { name: "Article quality" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Save draft" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Validate" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Publish" })).toBeVisible();
+    await expect(page.locator(".author-topbar")).toBeVisible();
+    const coverState = await page.locator(".cover-upload").evaluate((element) => { const image = element.querySelector("img"); return { loaded: Boolean(image && image.complete && image.naturalWidth > 0), fallback: Boolean(element.querySelector(".cover-upload-fallback")) }; });
+    expect(coverState.loaded || coverState.fallback).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    expect(pageErrors).toEqual([]);
+    expect(consoleErrors).toEqual([]);
+    expect(failedRequests).toEqual([]);
+  });
+
+  test("editor API keeps exact legacy path and structured error statuses", async ({ page }) => {
+    const exact = await page.request.get(`/api/author/articles?path=${encodeURIComponent("content/blog/ai/agentic-ai-explained.mdx")}`);
+    expect(exact.status()).toBe(200);
+    const body = await exact.json();
+    expect(body.path).toBe("content/blog/ai/agentic-ai-explained.mdx");
+    expect(body.input).toMatchObject({ title: expect.stringContaining("Agentic AI Explained"), slug: "agentic-ai-explained", category: "ai", readingTime: "14", difficulty: "Intermediate", coverImage: "/images/articles/agentic-ai-explained.png" });
+    expect(typeof body.input.content).toBe("string");
+    const invalid = await page.request.get("/api/author/articles?path=content%2Fprivate%2Fsecrets.mdx");
+    expect(invalid.status()).toBe(400);
+    expect((await invalid.json()).error).toBeTruthy();
+    const missing = await page.request.get("/api/author/articles?path=content%2Fblog%2Fai%2Fmissing-editor-regression.mdx");
+    expect(missing.status()).toBe(404);
+    expect((await missing.json()).error).toBeTruthy();
+  });
+
+  test("invalid editor path renders a normal private error state", async ({ page }) => {
+    await page.goto("/author/editor?path=content%2Fprivate%2Fsecrets.mdx");
+    await expect(page.getByRole("heading", { name: "Unable to open article" })).toBeVisible();
+    await expect(page.getByText(/Only article MDX files can be opened/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Retry" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Back to articles" })).toBeVisible();
+    await expect(page.locator("text=Application error: a client-side exception")).toHaveCount(0);
+  });
+
   test("dashboard filters and keyboard search work", async ({ page }) => {
     await expect(page.getByText("Drafts").first()).toBeVisible();
     await expect(page.getByText("Published").first()).toBeVisible();

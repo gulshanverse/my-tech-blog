@@ -23,6 +23,7 @@ export function CoverImageUpload({ slug, value, onChange }: Props) {
   const [status, setStatus] = useState<UploadStatus>("idle");
   const [message, setMessage] = useState("");
   const [previewSrc, setPreviewSrc] = useState(value);
+  const [imageFailed, setImageFailed] = useState(false);
   const [fileName, setFileName] = useState("");
   const [fileSize, setFileSize] = useState(0);
   const [dimensions, setDimensions] = useState("");
@@ -30,8 +31,8 @@ export function CoverImageUpload({ slug, value, onChange }: Props) {
   const [dragging, setDragging] = useState(false);
   const [url, setUrl] = useState("");
 
-  useEffect(() => { setPreviewSrc(value); if (!value) { setFileName(""); setFileSize(0); setDimensions(""); setRatioWarning(false); } }, [value]);
-  useEffect(() => () => { if (previewSrc.startsWith("blob:")) URL.revokeObjectURL(previewSrc); }, [previewSrc]);
+  useEffect(() => { setPreviewSrc(value); setImageFailed(false); if (!value) { setFileName(""); setFileSize(0); setDimensions(""); setRatioWarning(false); } }, [value]);
+  useEffect(() => () => { if (typeof previewSrc === "string" && previewSrc.startsWith("blob:")) URL.revokeObjectURL(previewSrc); }, [previewSrc]);
 
   async function uploadFile(file: File) {
     const validationError = errorForFile(file);
@@ -65,7 +66,7 @@ export function CoverImageUpload({ slug, value, onChange }: Props) {
 
   return <div className="cover-upload" onPaste={pasteImage} onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); const file = event.dataTransfer.files[0]; if (file) { setStatus("selecting"); void uploadFile(file); } }}>
     <div className={`cover-dropzone ${dragging ? "is-dragging" : ""} ${value ? "has-image" : ""}`} role="group" tabIndex={0} aria-label="Cover image upload area" onKeyDown={(event) => { if ((event.key === "Enter" || event.key === " ") && event.target === event.currentTarget) { event.preventDefault(); inputRef.current?.click(); } }}>
-      {previewSrc ? <div className="cover-upload-preview"><Image src={previewSrc} alt="" fill sizes="(max-width: 900px) 100vw, 640px" unoptimized onLoad={(event) => { const image = event.currentTarget; setDimensions(`${image.naturalWidth} × ${image.naturalHeight}`); setRatioWarning(!isRecommendedCoverRatio(image.naturalWidth, image.naturalHeight)); }} /><div className="cover-upload-overlay"><span>{status === "uploading" ? "Uploading image…" : status === "uploaded" ? "Image ready" : "Selected image"}</span></div></div> : <div className="cover-upload-empty"><ImagePlus className="cover-upload-empty-icon" size={20} aria-hidden="true" /><strong>Upload a cover image</strong><span>Drag and drop, paste an image, or choose a file</span><button type="button" className="author-quiet-button cover-upload-button" onClick={() => inputRef.current?.click()} aria-label="Upload cover image"><UploadCloud size={14} aria-hidden="true" /> Upload image</button><small>Recommended: JPG · PNG · WEBP · {ARTICLE_COVER_DIMENSIONS_LABEL} · {ARTICLE_COVER_RATIO_LABEL} · max 5 MB</small></div>}
+      {previewSrc ? <div className="cover-upload-preview">{imageFailed ? <div className="cover-upload-fallback"><ImagePlus size={20} aria-hidden="true" /><strong>Cover image unavailable</strong><span>The repository image could not be loaded.</span><button type="button" className="author-quiet-button cover-upload-button" onClick={() => inputRef.current?.click()}>Replace image</button></div> : <><Image src={previewSrc} alt="" fill sizes="(max-width: 900px) 100vw, 640px" unoptimized onLoad={(event) => { const image = event.currentTarget; setDimensions(`${image.naturalWidth} × ${image.naturalHeight}`); setRatioWarning(!isRecommendedCoverRatio(image.naturalWidth, image.naturalHeight)); }} onError={() => setImageFailed(true)} /><div className="cover-upload-overlay"><span>{status === "uploading" ? "Uploading image…" : status === "uploaded" ? "Image ready" : "Selected image"}</span></div></>}</div> : <div className="cover-upload-empty"><ImagePlus className="cover-upload-empty-icon" size={20} aria-hidden="true" /><strong>Upload a cover image</strong><span>Drag and drop, paste an image, or choose a file</span><button type="button" className="author-quiet-button cover-upload-button" onClick={() => inputRef.current?.click()} aria-label="Upload cover image"><UploadCloud size={14} aria-hidden="true" /> Upload image</button><small>Recommended: JPG · PNG · WEBP · {ARTICLE_COVER_DIMENSIONS_LABEL} · {ARTICLE_COVER_RATIO_LABEL} · max 5 MB</small></div>}
       <input ref={inputRef} className="cover-upload-input" type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml" onChange={chooseFile} aria-label="Choose cover image file" />
       {previewSrc && <button type="button" className="author-quiet-button cover-upload-button" onClick={() => inputRef.current?.click()} aria-label="Replace cover image"><UploadCloud size={14} aria-hidden="true" /> Replace</button>}
     </div>

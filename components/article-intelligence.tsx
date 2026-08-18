@@ -44,7 +44,7 @@ function EditorIntelligence({ input, articles, currentPath }: { input: ArticleDr
   const checklist = getPublishingChecklist(input, { canonicalUrl: input.slug ? `https://gulshanblogs.vercel.app/blog/${input.slug}` : "" });
   const stats = getContentStats(input);
   const similar = getTitleSimilarity(input.title, articles.filter(({ path }) => path !== currentPath).map(({ post }) => post.title));
-  const related = getRelatedEditorialArticles(input as unknown as EditorialArticle, articles.filter(({ path }) => path !== currentPath).map(({ post }) => post));
+  const related = getRelatedEditorialArticles(input, articles.filter(({ path }) => path !== currentPath).map(({ post }) => post));
   const tags = input.tags.split(/[,\n]/).map((tag) => tag.trim()).filter(Boolean);
   return <div className="author-intelligence-editor">
     <section className="author-panel" aria-labelledby="quality-heading"><div className="intelligence-section-heading"><div><div className="eyebrow">Publishing quality</div><h2 id="quality-heading">Article quality</h2></div><strong className="intelligence-score" aria-label={`Article health ${quality.score} out of 100`}>{quality.score}<small>/100</small></strong></div><div className="quality-summary"><span className="intelligence-pass">{quality.passed} pass</span><span className="intelligence-warning">{quality.warnings} warning</span><span className="intelligence-attention">{quality.attention} needs attention</span></div><div className="quality-list">{quality.checks.map((check) => <div className={statusTone(check.state)} key={check.id}><StateMark state={check.state} /><span><strong>{check.label}</strong>{check.detail && <small>{check.detail}</small>}</span></div>)}</div></section>

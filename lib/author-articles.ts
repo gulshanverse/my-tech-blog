@@ -4,60 +4,38 @@ import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 import { compileMDX } from "next-mdx-remote/rsc";
 import { categoryMeta, type CategorySlug } from "@/lib/site";
+import { emptyDraftInput, normalizeDraftInput, type ArticleDraftInput, type DraftInputLike, todayIso } from "@/lib/article-draft";
+export { emptyDraftInput, normalizeDraftInput, type ArticleDraftInput, type DraftInputLike, todayIso } from "@/lib/article-draft";
 import { parsePostSource, type Post, type PostStatus } from "@/lib/content";
 import { normalizeDifficulty, parseReadingTime, type Difficulty } from "@/lib/article-metadata";
 import { getGithubFile, listGithubArticlePaths } from "@/lib/github-content";
-
-export type ArticleDraftInput = {
-  title: string;
-  slug: string;
-  category: CategorySlug;
-  tags: string;
-  description: string;
-  coverImage: string;
-  coverAlt: string;
-  readingTime: string;
-  difficulty: Difficulty | "";
-  status: PostStatus;
-  content: string;
-  date: string;
-  updatedAt: string;
-  featured: boolean;
-};
 
 export type AuthorArticle = { post: Post; path: string; sha: string; source: string };
 
 const categories = Object.keys(categoryMeta) as CategorySlug[];
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const articlePathPattern = /^content\/blog\/(ai|engineering|programming|research|projects|learning)\/[a-z0-9]+(?:-[a-z0-9]+)*\.mdx$/;
 
-export function todayIso() {
-  return new Date().toISOString().slice(0, 10);
-}
+export function isArticlePath(path: string) { return articlePathPattern.test(path); }
 
 export function articlePath(category: CategorySlug, slug: string) {
   return `content/blog/${category}/${slug}.mdx`;
 }
 
-export function tagsFromInput(tags: string) {
+function safeString(value: unknown) { return value === null || value === undefined ? "" : String(value); }
+
+export function tagsFromInput(tags: unknown) {
+  const raw = Array.isArray(tags) ? tags.map(safeString).join(", ") : safeString(tags);
   const seen = new Set<string>();
-  return tags.split(/[,\n]/).map((tag) => tag.trim()).filter(Boolean).filter((tag) => { const key = tag.toLowerCase(); if (seen.has(key)) return false; seen.add(key); return true; });
+  return raw.split(/[,\n]/).map((tag) => tag.trim()).filter(Boolean).filter((tag) => { const key = tag.toLowerCase(); if (seen.has(key)) return false; seen.add(key); return true; });
 }
 
-export function tagsToInput(tags: string[]) {
-  return tags.join(", ");
+export function tagsToInput(tags: unknown) {
+  return Array.isArray(tags) ? tags.map(safeString).join(", ") : safeString(tags);
 }
 
 export function postToDraftInput(post: Post): ArticleDraftInput {
-  return { title: post.title, slug: post.slug, category: post.category, tags: tagsToInput(post.tags), description: post.description, coverImage: post.coverImage, coverAlt: post.coverAlt || `Editorial visual representing ${post.title}`, readingTime: String(post.readingTime), difficulty: post.difficulty || "", status: post.status, content: post.content, date: post.date || todayIso(), updatedAt: post.updatedAt || "", featured: post.featured };
-}
-
-export function emptyDraftInput(): ArticleDraftInput {
-  return { title: "", slug: "", category: "ai", tags: "", description: "", coverImage: "", coverAlt: "", readingTime: "1", difficulty: "", status: "draft", content: "", date: todayIso(), updatedAt: "", featured: false };
-}
-
-export function normalizeDraftInput(input: Partial<ArticleDraftInput>): ArticleDraftInput {
-  const category = categories.includes(input.category as CategorySlug) ? input.category as CategorySlug : "ai";
-  return { ...emptyDraftInput(), ...input, category, title: String(input.title || "").trim(), slug: String(input.slug || "").trim().toLowerCase(), tags: String(input.tags || ""), description: String(input.description || "").trim(), coverImage: String(input.coverImage || "").trim(), coverAlt: String(input.coverAlt || "").trim(), readingTime: String(input.readingTime || "").trim(), difficulty: input.difficulty ? String(input.difficulty).trim() as Difficulty : "", status: input.status === "published" ? "published" : "draft", content: String(input.content || ""), date: String(input.date || todayIso()), updatedAt: String(input.updatedAt || ""), featured: Boolean(input.featured) };
+  return normalizeDraftInput({ title: post.title, slug: post.slug, category: post.category, tags: tagsToInput(post.tags), description: post.description, coverImage: post.coverImage, coverAlt: post.coverAlt || `Editorial visual representing ${post.title}`, readingTime: String(post.readingTime), difficulty: post.difficulty, status: post.status, content: post.content, date: post.date || todayIso(), updatedAt: post.updatedAt || "", featured: post.featured });
 }
 
 export function draftToSource(input: ArticleDraftInput) {
@@ -94,7 +72,7 @@ export async function validateDraft(input: ArticleDraftInput, existingPaths: str
   if (!tagsFromInput(input.tags).length) errors.push("Add at least one tag.");
   if (!input.content.trim()) errors.push("Article content is required.");
   if (!parseReadingTime(input.readingTime)) errors.push("Reading time must be a whole number of at least 1 minute.");
-  if (input.difficulty && !normalizeDifficulty(input.difficulty)) errors.push("Difficulty must be Beginner, Intermediate, or Advanced.");
+  if (input.invalidDifficulty || (input.difficulty && !normalizeDifficulty(input.difficulty))) errors.push("Difficulty must be Beginner, Intermediate, or Advanced.");
   if (input.status === "published" && !input.coverImage) errors.push("A cover image is required before publishing.");
   if (input.status === "published" && !input.coverAlt) errors.push("Cover image alt text is required before publishing.");
   const path = articlePath(input.category, input.slug);

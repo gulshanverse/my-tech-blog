@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { hasAuthorSession } from "@/lib/author-auth";
-import { articlePath, draftToSource, getGithubArticles, inputFromSource, normalizeDraftInput, tagsFromInput, validateDraft } from "@/lib/author-articles";
+import { articlePath, draftToSource, getGithubArticles, inputFromSource, isArticlePath, normalizeDraftInput, tagsFromInput, validateDraft } from "@/lib/author-articles";
 import { deleteGithubFile, getGithubFile, getGithubRevisionFile, getGithubRevisions, githubContentConfigured, writeGithubFile } from "@/lib/github-content";
 import { getCategory, parsePostSource } from "@/lib/content";
 import { categoryMeta, type CategorySlug } from "@/lib/site";
@@ -9,7 +9,6 @@ import { categoryMeta, type CategorySlug } from "@/lib/site";
 function unauthorized() { return NextResponse.json({ error: "Author Studio access is required." }, { status: 401 }); }
 function unavailable() { return NextResponse.json({ error: "GitHub publishing is not configured on the server. Add the required private environment variables before using Author Studio mutations." }, { status: 503 }); }
 function refreshPublicContent() { revalidatePath("/", "layout"); revalidatePath("/blog", "page"); revalidatePath("/sitemap.xml"); revalidatePath("/feed.xml"); }
-function isArticlePath(path: string) { return /^content\/blog\/(ai|engineering|programming|research|projects|learning)\/[a-z0-9]+(?:-[a-z0-9]+)*\.mdx$/.test(path); }
 
 export async function GET(request: Request) {
   if (!(await hasAuthorSession())) return unauthorized();

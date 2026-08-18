@@ -1,4 +1,4 @@
-import type { ArticleDraftInput } from "@/lib/author-articles";
+import type { ArticleDraftInput } from "@/lib/article-draft";
 
 export const AUTO_SAVE_DELAY_MS = 900;
 
