@@ -962,3 +962,14 @@ body.author-route > .skip-link, body.author-route > .site-header, body.author-ro
 .cover-upload-fallback strong { color: var(--paper); font-size: .9rem; }
 .cover-upload-fallback span { color: rgba(255,255,255,.72); font: .72rem var(--mono); }
 .cover-upload-fallback .author-quiet-button { border-color: rgba(255,255,255,.35); color: var(--paper); }
+
+/* Intrinsically bounded Author Intelligence links */
+.author-intelligence-editor, .author-intelligence-editor > .author-panel, .author-sidebar > *, .related-editorial-list { min-width: 0; max-width: 100%; box-sizing: border-box; }
+.intelligence-section-heading > div, .quality-list > div > span, .checklist-groups > div, .editor-metric-grid > span { min-width: 0; max-width: 100%; }
+.related-editorial-list > a { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; }
+.related-editorial-list > a > svg { flex: 0 0 14px; width: 14px; height: 14px; }
+.related-editorial-list > a > span { display: block; min-width: 0; max-width: 100%; }
+.related-editorial-list > a strong, .related-editorial-list > a small { display: block; min-width: 0; max-width: 100%; overflow-wrap: anywhere; word-break: break-word; white-space: normal; overflow: visible; text-overflow: clip; }
+.related-editorial-list > a strong { color: var(--navy); }
+.related-editorial-list > a small { margin-top: .2rem; line-height: 1.35; }
+.author-timeline-item strong, .recently-updated-list strong { display: block; min-width: 0; max-width: 100%; overflow-wrap: anywhere; word-break: break-word; white-space: normal; overflow: visible; text-overflow: clip; }

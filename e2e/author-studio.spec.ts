@@ -193,6 +193,39 @@ test.describe("authenticated Author Studio workflow", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   });
 
+  test("engineering editor related links stay bounded and wrap long titles", async ({ page }) => {
+    for (const width of [320, 375, 768, 1024, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/author/editor?path=content%2Fblog%2Fengineering%2Fdesigning-for-failure-in-small-systems.mdx");
+      const relatedPanel = page.locator("section.author-panel").filter({ has: page.getByRole("heading", { name: "Related articles" }) });
+      const list = page.locator(".related-editorial-list");
+      await expect(list).toBeVisible();
+      const panelBox = await relatedPanel.boundingBox();
+      const links = list.locator(":scope > a");
+      expect(await links.count()).toBeGreaterThan(0);
+      for (let index = 0; index < await links.count(); index += 1) {
+        const link = links.nth(index);
+        const linkBox = await link.boundingBox();
+        const title = link.locator("strong");
+        const metadata = link.locator("small");
+        const icon = link.locator("svg");
+        expect(panelBox).not.toBeNull();
+        expect(linkBox).not.toBeNull();
+        expect((linkBox?.x || 0) + (linkBox?.width || 0)).toBeLessThanOrEqual((panelBox?.x || 0) + (panelBox?.width || 0) + 1);
+        await expect(title).toBeVisible();
+        await expect(metadata).toBeVisible();
+        expect(await title.evaluate((element) => getComputedStyle(element).display)).toBe("block");
+        expect(await title.evaluate((element) => getComputedStyle(element).whiteSpace)).toBe("normal");
+        expect(await metadata.evaluate((element) => getComputedStyle(element).display)).toBe("block");
+        expect(await metadata.evaluate((element) => getComputedStyle(element).whiteSpace)).toBe("normal");
+        expect(await icon.evaluate((element) => ({ width: getComputedStyle(element).width, flex: getComputedStyle(element).flexShrink }))).toMatchObject({ width: "14px", flex: "0" });
+      }
+      const overflow = await page.evaluate(() => ({ document: document.documentElement.scrollWidth <= window.innerWidth, body: document.body.scrollWidth <= window.innerWidth }));
+      expect(overflow.document).toBe(true);
+      expect(overflow.body).toBe(true);
+    }
+  });
+
   test("editor quality checklist and metrics are informational", async ({ page }) => {
     await page.getByRole("button", { name: /New article/i }).click();
     await expect(page.getByRole("heading", { name: "Article quality" })).toBeVisible();
