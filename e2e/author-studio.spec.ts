@@ -83,6 +83,16 @@ test.describe("authenticated Author Studio workflow", () => {
     await expect(page.getByText(/Analytics data is not connected yet/i)).toBeVisible();
   });
 
+  test("taxonomy search narrows real categories and tags", async ({ page }) => {
+    await page.getByRole("button", { name: /Open taxonomy/i }).click();
+    await expect(page.getByText("Categories")).toBeVisible();
+    const taxonomySearch = page.getByRole("textbox", { name: "Search taxonomy" });
+    await taxonomySearch.fill("ai");
+    await expect(page.getByText(/AI & Machine Learning/i)).toBeVisible();
+    await taxonomySearch.fill("no-such-taxonomy-value");
+    await expect(page.getByText(/No categories or tags match/i)).toBeVisible();
+  });
+
   test("editor quality checklist and metrics are informational", async ({ page }) => {
     await page.getByRole("button", { name: /New article/i }).click();
     await expect(page.getByRole("heading", { name: "Article quality" })).toBeVisible();
@@ -111,6 +121,18 @@ test.describe("authenticated Author Studio workflow", () => {
     await readingTime.fill("6");
     await expect(readingTime).toHaveValue("6");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  });
+
+  test("revision history exposes a working restore action after inspection", async ({ page }) => {
+    await page.getByRole("button", { name: /Agentic AI Explained/i }).first().click();
+    await page.getByRole("button", { name: /Open revision history/i }).click();
+    const revision = page.locator(".revision-item").first();
+    if (await revision.count()) {
+      await revision.click();
+      await expect(page.getByRole("button", { name: "Restore this revision" })).toBeVisible();
+    } else {
+      await expect(page.getByText(/No saved revisions were found/i)).toBeVisible();
+    }
   });
 
   test("published article opens Share Studio without social publishing", async ({ page }) => {

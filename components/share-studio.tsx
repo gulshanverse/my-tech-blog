@@ -22,6 +22,8 @@ function draftText(content: ShareContent) { return content.platform === "reddit"
 
 export function ShareStudio({ article, onClose }: Props) {
   const articleKey = [article.slug, article.title, article.description, article.category, article.tags?.join("|"), article.content, article.coverImage].join("\u0000");
+  // The key contains every article field used by generateShareContent; keeping it stable avoids regenerating copy on unrelated parent renders.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const generated = useMemo(() => Object.fromEntries(platforms.map(({ id }) => [id, generateShareContent(article, id)])) as Record<SharePlatform, ShareContent>, [articleKey]);
   const [active, setActive] = useState<SharePlatform>("x");
   const [drafts, setDrafts] = useState<Record<SharePlatform, string>>(() => Object.fromEntries(platforms.map(({ id }) => [id, draftText(generated[id])])) as Record<SharePlatform, string>);

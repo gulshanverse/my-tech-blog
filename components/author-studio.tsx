@@ -48,16 +48,48 @@ export function AuthorStudio({ initialView = "dashboard", initialPath = "" }: Pr
 
   async function loadArticles() {
     setBusy(true); setError("");
-    const response = await fetch("/api/author/articles", { cache: "no-store" });
-    const body = await response.json().catch(() => ({}));
-    if (!response.ok) setError(body.error || "Unable to load articles."); else setArticles(body.articles || []);
-    setBusy(false);
+    try {
+      const response = await fetch("/api/author/articles", { cache: "no-store" });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) setError(body.error || "Unable to load articles."); else setArticles(body.articles || []);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Unable to load articles. Check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
-  const autoSaveDraft = useCallback(async () => { if (input.status !== "draft" || busy) return; setAutoSaveState("Saving…"); setAutoSaveError(""); const method = path ? "PUT" : "POST"; const response = await fetch("/api/author/articles", { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(path ? { path, sha, input, confirmed: false } : { input }) }); const body = await response.json().catch(() => ({})); if (!response.ok) { setAutoSaveState("Save failed"); setAutoSaveError(body.error || "Autosave failed. Your local draft is preserved; retry manually when ready."); return; } setPath(body.path || path); setSha(body.sha || sha); setAutoSaveState("Saved just now"); setSaveState("Saved to GitHub"); window.localStorage.removeItem("gulshan-author-draft"); }, [input, busy, path, sha]);
+  const autoSaveDraft = useCallback(async () => {
+    if (input.status !== "draft" || busy) return;
+    setAutoSaveState("Saving…"); setAutoSaveError("");
+    try {
+      const method = path ? "PUT" : "POST";
+      const response = await fetch("/api/author/articles", { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(path ? { path, sha, input, confirmed: false } : { input }) });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) { setAutoSaveState("Save failed"); setAutoSaveError(body.error || "Autosave failed. Your local draft is preserved; retry manually when ready."); return; }
+      setPath(body.path || path); setSha(body.sha || sha); setAutoSaveState("Saved just now"); setSaveState("Saved to GitHub"); window.localStorage.removeItem("gulshan-author-draft");
+    } catch (reason) {
+      setAutoSaveState("Save failed"); setAutoSaveError(reason instanceof Error ? reason.message : "Autosave failed. Your local draft is preserved; retry manually when ready.");
+    }
+  }, [input, busy, path, sha]);
   const autoSaveRef = useRef(autoSaveDraft);
   useEffect(() => { autoSaveRef.current = autoSaveDraft; }, [autoSaveDraft]);
-  useEffect(() => { loadArticles(); const saved = window.localStorage.getItem("gulshan-author-draft"); if (saved && initialView === "editor" && !initialPath) { try { setInput(JSON.parse(saved)); setNotice("Recovered a local unsaved draft."); setAutoSaveState("Saved locally"); } catch { window.localStorage.removeItem("gulshan-author-draft"); } } if (initialPath) { void (async () => { const response = await fetch(`/api/author/articles?path=${encodeURIComponent(initialPath)}`, { cache: "no-store" }); const body = await response.json().catch(() => ({})); if (response.ok) { setInput(body.input); setPath(body.path); setSha(body.sha); setView("editor"); } else setError(body.error || "Unable to open article."); })(); } }, [initialView, initialPath]);
+  useEffect(() => {
+    void loadArticles();
+    const saved = window.localStorage.getItem("gulshan-author-draft");
+    if (saved && initialView === "editor" && !initialPath) { try { setInput(JSON.parse(saved)); setNotice("Recovered a local unsaved draft."); setAutoSaveState("Saved locally"); } catch { window.localStorage.removeItem("gulshan-author-draft"); } }
+    if (initialPath) {
+      void (async () => {
+        setBusy(true); setError("");
+        try {
+          const response = await fetch(`/api/author/articles?path=${encodeURIComponent(initialPath)}`, { cache: "no-store" });
+          const body = await response.json().catch(() => ({}));
+          if (response.ok) { setInput(body.input); setPath(body.path); setSha(body.sha); setView("editor"); } else setError(body.error || "Unable to open article.");
+        } catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to open article. Check your connection and try again."); }
+        finally { setBusy(false); }
+      })();
+    }
+  }, [initialView, initialPath]);
   useEffect(() => { if (view !== "editor") return; setSaveState("Unsaved changes"); setAutoSaveState("Unsaved changes"); setAutoSaveError(""); const scheduler = scheduleAutoSave(() => { window.localStorage.setItem("gulshan-author-draft", JSON.stringify(input)); setAutoSaveState("Saved locally"); if (canAutoSaveDraft(input)) void autoSaveRef.current(); }); scheduler.schedule(); return scheduler.cancel; }, [input, view]);
 
   const availableTags = useMemo(() => Array.from(new Set(articles.flatMap(({ post }) => post.tags))).sort((a, b) => a.localeCompare(b)), [articles]);
@@ -77,13 +109,85 @@ export function AuthorStudio({ initialView = "dashboard", initialPath = "" }: Pr
 
   function update(field: keyof ArticleDraftInput, value: string | boolean) { setInput((current) => ({ ...current, [field]: value })); setValidation(null); setNotice(""); setError(""); }
   function newArticle() { setInput({ ...blankInput, date: new Date().toISOString().slice(0, 10) }); setPath(""); setSha(""); setValidation(null); setPublishedUrl(""); setShareOpen(false); setNotice(""); setError(""); setView("editor"); }
-  async function openArticle(article: ListedArticle) { setBusy(true); const response = await fetch(`/api/author/articles?path=${encodeURIComponent(article.path)}`, { cache: "no-store" }); const body = await response.json().catch(() => ({})); if (!response.ok) setError(body.error || "Unable to open article."); else { setInput(body.input); setPath(body.path); setSha(body.sha); setValidation(null); setPublishedUrl(""); setShareOpen(false); setView("editor"); } setBusy(false); }
+  async function openArticle(article: ListedArticle) {
+    setBusy(true); setError("");
+    try {
+      const response = await fetch(`/api/author/articles?path=${encodeURIComponent(article.path)}`, { cache: "no-store" });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) setError(body.error || "Unable to open article."); else { setInput(body.input); setPath(body.path); setSha(body.sha); setValidation(null); setPublishedUrl(""); setShareOpen(false); setView("editor"); }
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Unable to open article. Check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
-  async function validate() { setBusy(true); setError(""); const response = await fetch("/api/author/articles", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "validate", input, path }) }); const body = await response.json().catch(() => ({})); if (body.validation) setValidation(body.validation); if (!response.ok) setError(body.error || "Unable to validate the article."); setBusy(false); return body.validation as Validation | undefined; }
-  async function save(status: "draft" | "published", confirmed = false) { setBusy(true); setError(""); setNotice(""); const nextInput = { ...input, status, updatedAt: status === "published" ? new Date().toISOString().slice(0, 10) : input.updatedAt }; const method = path ? "PUT" : "POST"; const response = await fetch("/api/author/articles", { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(path ? { path, sha, input: nextInput, confirmed } : { input: nextInput }) }); const body = await response.json().catch(() => ({})); if (!response.ok) { setError(body.error || "The article was not saved."); setBusy(false); if (body.requiresConfirmation && window.confirm("This will overwrite the published version. Continue?")) return save(status, true); return; } setInput(nextInput); setPath(body.path); setSha(body.sha || sha); window.localStorage.removeItem("gulshan-author-draft"); setSaveState("Saved to GitHub"); setNotice(status === "published" ? "Published successfully. A deployment will update the public blog, RSS, sitemap, and social metadata." : "Draft saved to GitHub."); if (status === "published") { setPublishedUrl(`${siteConfig.url}/blog/${nextInput.slug}`); setShareOpen(true); } await loadArticles(); setBusy(false); }
-  async function duplicate() { const newSlug = window.prompt("New slug for this draft", `${input.slug}-copy`); if (!newSlug || !path) return; setBusy(true); const response = await fetch("/api/author/articles", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "duplicate", path, newSlug }) }); const body = await response.json().catch(() => ({})); if (!response.ok) setError(body.error || "Unable to duplicate the article."); else { setNotice("Draft duplicated."); await loadArticles(); } setBusy(false); }
-  async function deleteDraft() { if (!path || input.status !== "draft" || !window.confirm("Delete this draft from GitHub? This cannot be undone.")) return; setBusy(true); const response = await fetch("/api/author/articles", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path, sha }) }); const body = await response.json().catch(() => ({})); if (!response.ok) setError(body.error || "Unable to delete the draft."); else { setNotice("Draft deleted."); await loadArticles(); setView("dashboard"); } setBusy(false); }
-  async function deleteVisibleDrafts() { const visibleDrafts = filteredArticles.filter(({ post }) => post.status === "draft"); if (!visibleDrafts.length || !window.confirm(`Delete ${visibleDrafts.length} visible draft${visibleDrafts.length === 1 ? "" : "s"} from GitHub? This cannot be undone.`)) return; setBulkBusy(true); setError(""); setNotice(""); const response = await fetch("/api/author/articles", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "bulkDelete", paths: visibleDrafts.map(({ path }) => path) }) }); const body = await response.json().catch(() => ({})); if (!response.ok) setError(body.error || "Unable to delete the visible drafts."); else { setNotice(`${body.deleted || 0} draft${body.deleted === 1 ? "" : "s"} deleted.`); await loadArticles(); } setBulkBusy(false); }
+  async function validate() {
+    setBusy(true); setError("");
+    try {
+      const response = await fetch("/api/author/articles", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "validate", input, path }) });
+      const body = await response.json().catch(() => ({}));
+      if (body.validation) setValidation(body.validation);
+      if (!response.ok) setError(body.error || "Unable to validate the article.");
+      return body.validation as Validation | undefined;
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Unable to validate the article. Check your connection and try again.");
+      return undefined;
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function save(status: "draft" | "published", confirmed = false) {
+    setBusy(true); setError(""); setNotice("");
+    const nextInput = { ...input, status, updatedAt: status === "published" ? new Date().toISOString().slice(0, 10) : input.updatedAt };
+    try {
+      const method = path ? "PUT" : "POST";
+      const response = await fetch("/api/author/articles", { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(path ? { path, sha, input: nextInput, confirmed } : { input: nextInput }) });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setError(body.error || "The article was not saved.");
+        if (body.requiresConfirmation && window.confirm("This will overwrite the published version. Continue?")) { setBusy(false); return save(status, true); }
+        return;
+      }
+      setInput(nextInput); setPath(body.path); setSha(body.sha || sha); window.localStorage.removeItem("gulshan-author-draft"); setSaveState("Saved to GitHub"); setNotice(status === "published" ? "Published successfully. A deployment will update the public blog, RSS, sitemap, and social metadata." : "Draft saved to GitHub.");
+      if (status === "published") { setPublishedUrl(`${siteConfig.url}/blog/${nextInput.slug}`); setShareOpen(true); }
+      await loadArticles();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "The article was not saved. Check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function duplicate() {
+    const newSlug = window.prompt("New slug for this draft", `${input.slug}-copy`); if (!newSlug || !path) return;
+    setBusy(true); setError("");
+    try {
+      const response = await fetch("/api/author/articles", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "duplicate", path, newSlug }) });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) setError(body.error || "Unable to duplicate the article."); else { setNotice("Draft duplicated."); await loadArticles(); }
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to duplicate the article. Check your connection and try again."); }
+    finally { setBusy(false); }
+  }
+  async function deleteDraft() {
+    if (!path || input.status !== "draft" || !window.confirm("Delete this draft from GitHub? This cannot be undone.")) return;
+    setBusy(true); setError("");
+    try {
+      const response = await fetch("/api/author/articles", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path, sha }) });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) setError(body.error || "Unable to delete the draft."); else { setNotice("Draft deleted."); await loadArticles(); setView("dashboard"); }
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to delete the draft. Check your connection and try again."); }
+    finally { setBusy(false); }
+  }
+  async function deleteVisibleDrafts() {
+    const visibleDrafts = filteredArticles.filter(({ post }) => post.status === "draft"); if (!visibleDrafts.length || !window.confirm(`Delete ${visibleDrafts.length} visible draft${visibleDrafts.length === 1 ? "" : "s"} from GitHub? This cannot be undone.`)) return;
+    setBulkBusy(true); setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/author/articles", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "bulkDelete", paths: visibleDrafts.map(({ path }) => path) }) });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) setError(body.error || "Unable to delete the visible drafts."); else { setNotice(`${body.deleted || 0} draft${body.deleted === 1 ? "" : "s"} deleted.`); await loadArticles(); }
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to delete the visible drafts. Check your connection and try again."); }
+    finally { setBulkBusy(false); }
+  }
   async function logout() { await fetch("/api/author/auth/logout", { method: "POST" }); window.location.href = "/author/login"; }
 
   if (view === "preview") return <main className="author-workspace"><div className="author-topbar"><span className="author-topbar-context">GULSHANVERSE / AUTHOR STUDIO</span><button className="author-quiet-button" onClick={() => setView("editor")}><ArrowLeft size={15} /> Return to edit</button></div><AuthorPreview input={input} /></main>;
