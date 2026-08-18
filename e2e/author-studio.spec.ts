@@ -75,6 +75,23 @@ test.describe("authenticated Author Studio workflow", () => {
     await expect(page.getByRole("button", { name: /Agentic AI Explained/i }).first()).toBeVisible();
   });
 
+  test("dashboard content intelligence is derived and visible", async ({ page }) => {
+    await expect(page.getByRole("heading", { name: "Content overview" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Search performance" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Content timeline" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Recently updated" })).toBeVisible();
+    await expect(page.getByText(/Analytics data is not connected yet/i)).toBeVisible();
+  });
+
+  test("editor quality checklist and metrics are informational", async ({ page }) => {
+    await page.getByRole("button", { name: /New article/i }).click();
+    await expect(page.getByRole("heading", { name: "Article quality" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Publishing checklist" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Article metrics" })).toBeVisible();
+    await expect(page.getByText(/Description guidance: approximately 120–160 characters/i)).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  });
+
   test("metadata controls are controlled, numeric, and keyboard accessible", async ({ page }) => {
     await page.getByRole("button", { name: /New article/i }).click();
     const difficulty = page.getByRole("combobox", { name: "Difficulty" });
