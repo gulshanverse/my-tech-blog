@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { hasAuthorSession } from "@/lib/author-auth";
-import { getLocalTopics, getSourceShas, saveTopics } from "@/lib/author-content";
+import { getAuthorTopics, saveTopics } from "@/lib/author-content";
 import { validateTopicCollection, validateTopicInput, type TopicInput } from "@/lib/content-management";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +9,12 @@ function unauthorized() { return NextResponse.json({ error: "Author Studio acces
 
 export async function GET() {
   if (!(await hasAuthorSession())) return unauthorized();
-  return NextResponse.json({ topics: getLocalTopics(), shas: await getSourceShas() }, { headers: { "Cache-Control": "private, no-store" } });
+  try {
+    const result = await getAuthorTopics();
+    return NextResponse.json({ topics: result.topics, shas: { topics: result.sha } }, { headers: { "Cache-Control": "private, no-store" } });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to load topics." }, { status: 502, headers: { "Cache-Control": "private, no-store" } });
+  }
 }
 
 export async function POST(request: Request) {

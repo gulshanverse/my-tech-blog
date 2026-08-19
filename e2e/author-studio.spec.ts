@@ -424,6 +424,30 @@ test.describe("unified content management", () => {
   });
 
   test.skip(!authenticated, "Set E2E_AUTHOR_USERNAME and E2E_AUTHOR_PASSWORD for authenticated create-form coverage");
+  test("shared theme persists across Author routes and creation forms", async ({ page }) => {
+    await page.goto("/author");
+    await page.evaluate(() => window.localStorage.setItem("gulshan-theme", "light"));
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await page.getByRole("button", { name: /Switch to dark mode/i }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await page.getByRole("link", { name: "Projects", exact: true }).first().click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await page.getByRole("button", { name: "New project" }).click();
+    await expect(page.locator(".content-type-editor")).toBeVisible();
+    await expect(page.getByRole("button", { name: /Switch to light mode/i })).toBeVisible();
+    await page.getByRole("link", { name: "Topics", exact: true }).first().click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await page.getByRole("button", { name: "New topic" }).click();
+    await expect(page.locator(".content-type-editor")).toBeVisible();
+    await page.goto("/author/analytics");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await page.getByRole("button", { name: /Switch to light mode/i }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  });
+
   test("Project and Topic creation forms validate and cancel without writing", async ({ page }) => {
     await page.goto("/author?type=projects");
     await page.getByRole("button", { name: "New project" }).click();

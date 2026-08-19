@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { hasAuthorSession } from "@/lib/author-auth";
-import { getLocalProjects, getSourceShas, saveProjects } from "@/lib/author-content";
+import { getAuthorProjects, saveProjects } from "@/lib/author-content";
 import { validateProjectCollection, validateProjectInput, type ProjectInput } from "@/lib/content-management";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +9,12 @@ function unauthorized() { return NextResponse.json({ error: "Author Studio acces
 
 export async function GET() {
   if (!(await hasAuthorSession())) return unauthorized();
-  return NextResponse.json({ projects: getLocalProjects(), shas: await getSourceShas() }, { headers: { "Cache-Control": "private, no-store" } });
+  try {
+    const result = await getAuthorProjects();
+    return NextResponse.json({ projects: result.projects, shas: { projects: result.sha } }, { headers: { "Cache-Control": "private, no-store" } });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to load projects." }, { status: 502, headers: { "Cache-Control": "private, no-store" } });
+  }
 }
 
 export async function POST(request: Request) {

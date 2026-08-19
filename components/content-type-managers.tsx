@@ -50,8 +50,10 @@ export function ProjectManager() {
       if (!response.ok) throw new Error(body.error || "Unable to load projects.");
       setProjects(Array.isArray(body.projects) ? body.projects : []);
       setSha(body.shas?.projects || "");
+      return true;
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Unable to load projects.");
+      return false;
     } finally {
       setBusy(false);
     }
@@ -82,11 +84,15 @@ export function ProjectManager() {
       const response = await fetch("/api/author/projects", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ projects: next, sha }) });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error || "Unable to save project.");
+      const refreshed = await load();
+      if (!refreshed) {
+        setNotice("");
+        throw new Error("Project saved, but the refreshed project list could not be loaded. Keep this form open and retry after refreshing.");
+      }
       setDraft(null);
       setMode("edit");
       setEditingSlug("");
       setNotice(mode === "new" ? "Project created and saved to GitHub." : "Project saved to GitHub.");
-      await load();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Unable to save project.");
     } finally {
@@ -126,8 +132,10 @@ export function TopicManager() {
       if (!response.ok) throw new Error(body.error || "Unable to load topics.");
       setTopics(Array.isArray(body.topics) ? body.topics : []);
       setSha(body.shas?.topics || "");
+      return true;
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Unable to load topics.");
+      return false;
     } finally {
       setBusy(false);
     }
@@ -155,11 +163,15 @@ export function TopicManager() {
       const response = await fetch("/api/author/topics", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topics: next, sha }) });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error || "Unable to save topic.");
+      const refreshed = await load();
+      if (!refreshed) {
+        setNotice("");
+        throw new Error("Topic saved, but the refreshed topic list could not be loaded. Keep this form open and retry after refreshing.");
+      }
       setDraft(null);
       setMode("edit");
       setEditingSlug("");
       setNotice(mode === "new" ? "Topic created and saved to GitHub." : "Topic saved to GitHub.");
-      await load();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Unable to save topic.");
     } finally {
