@@ -371,3 +371,41 @@ test.describe("authenticated Author Studio workflow", () => {
     await expect(page).toHaveURL(/\/author\/login$/);
   });
 });
+
+
+test.describe("unified content management", () => {
+  test("projects and topics APIs remain protected when logged out", async ({ request }) => {
+    const projects = await request.get("/api/author/projects");
+    const topics = await request.get("/api/author/topics");
+    expect(projects.status()).toBe(401);
+    expect(topics.status()).toBe(401);
+  });
+
+  test("content-type entry URLs remain protected when logged out", async ({ page }) => {
+    await page.goto("/author?type=projects");
+    await expect(page).toHaveURL(/\/author\/login$/);
+    await page.goto("/author?type=topics");
+    await expect(page).toHaveURL(/\/author\/login$/);
+  });
+
+  test.skip(!authenticated, "Set E2E_AUTHOR_USERNAME and E2E_AUTHOR_PASSWORD for authenticated content-type coverage");
+  test("authenticated Author Studio switches between Blog, Projects, and Topics without public overflow", async ({ page }) => {
+    await page.goto("/author");
+    await expect(page.getByRole("link", { name: "Blog", exact: true }).first()).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("link", { name: "Projects", exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Topics", exact: true }).first()).toBeVisible();
+    await page.getByRole("link", { name: "Projects", exact: true }).first().click();
+    await expect(page).toHaveURL(/\/author\?type=projects$/);
+    await expect(page.getByRole("heading", { name: "Projects", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "New project" })).toBeVisible();
+    await page.getByRole("link", { name: "Topics", exact: true }).first().click();
+    await expect(page).toHaveURL(/\/author\?type=topics$/);
+    await expect(page.getByRole("heading", { name: "Topics", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "New topic" })).toBeVisible();
+    for (const width of [320, 375, 768, 1024, 1280, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      expect(await page.evaluate(() => document.body.scrollWidth <= window.innerWidth)).toBe(true);
+    }
+  });
+});

@@ -983,3 +983,79 @@ body.author-route > .skip-link, body.author-route > .site-header, body.author-ro
 .toc a { min-width: 0; }
 .toc-link-text { min-width: 0; overflow-wrap: anywhere; }
 .toc-link-text--nested { padding-left: .65rem; font-size: .72rem; }
+
+/* Unified Author Studio content-type management */
+.author-content-type-nav {
+  display: flex;
+  gap: 0.35rem;
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 1rem 0 0;
+  border-bottom: 1px solid var(--line);
+}
+.author-content-type-nav a {
+  display: inline-flex;
+  min-height: 2.6rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.author-content-type-nav a:hover,
+.author-content-type-nav a.active {
+  color: var(--ink);
+  border-bottom-color: var(--gold);
+}
+.author-content-manager {
+  padding-top: 2.75rem;
+  padding-bottom: 5rem;
+}
+.author-content-manager .author-masthead {
+  margin-bottom: 2.5rem;
+}
+.author-content-manager .author-heading {
+  margin-top: 0;
+}
+.content-type-editor {
+  margin-top: 2rem;
+}
+.content-type-form {
+  max-width: 900px;
+}
+.content-type-preview-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+.author-search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.author-search-field > svg {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+.author-search-field input {
+  min-width: 0;
+}
+@media (max-width: 620px) {
+  .author-content-type-nav {
+    width: calc(100% - 2rem);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .author-content-type-nav::-webkit-scrollbar { display: none; }
+  .author-content-type-nav a { flex: 1 0 7rem; padding: 0 0.75rem; }
+  .author-content-manager { padding-top: 2rem; }
+  .author-content-manager .author-heading { align-items: flex-start; flex-direction: column; gap: 1rem; }
+  .content-type-editor .author-editor-heading { align-items: flex-start; flex-direction: column; gap: 1rem; }
+  .content-type-editor .author-editor-actions { width: 100%; flex-wrap: wrap; }
+}
