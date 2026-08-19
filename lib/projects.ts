@@ -135,22 +135,6 @@ export const projects: Project[] = [
       "Lessons learned log"
     ],
     "lessons": "The best reading notes are not summaries. They are invitations to ask a sharper engineering question."
-  },
-  {
-    "slug": "author-studio-e2e-test",
-    "name": "AUTHOR-STUDIO-E2E-TEST",
-    "category": "E2E Verification",
-    "description": "Temporary Author Studio end-to-end persistence verification record.",
-    "coverImage": "",
-    "status": "Prototype",
-    "stack": [],
-    "github": "",
-    "demo": "",
-    "problem": "",
-    "solution": "",
-    "architecture": [],
-    "features": [],
-    "lessons": ""
   }
 ];
 
