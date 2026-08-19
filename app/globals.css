@@ -96,7 +96,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .feature-card:first-child { background: var(--deep-navy); color: white; }
 .feature-art { position: relative; overflow: hidden; min-height: 0; aspect-ratio: 16 / 9; margin-bottom: 1.4rem; background: var(--mist); }
 .article-thumb { position: relative; min-height: 0; aspect-ratio: 16 / 9; margin: -1.2rem -1.2rem 1.2rem; overflow: hidden; background: var(--mist); }
-.cover-image { object-fit: cover; transition: transform .45s var(--ease-out); }
+.cover-image { max-width: 100%; object-fit: cover; transition: transform .45s var(--ease-out); }
 .feature-card:hover .cover-image, .post-card:hover .cover-image, .project-card:hover .cover-image, .recommendation-lead:hover .cover-image { transform: scale(1.035); }
 .feature-art > span, .recommendation-art > span { position: relative; z-index: 1; }
 .feature-card:first-child .feature-art { background: #102d51; }

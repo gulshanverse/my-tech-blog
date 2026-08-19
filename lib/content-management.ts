@@ -1,10 +1,9 @@
 import type { Project } from "@/lib/projects";
-import type { CategorySlug } from "@/lib/site";
 
 export type ManagedContentType = "projects" | "topics";
 
 export type TopicRecord = {
-  slug: CategorySlug;
+  slug: string;
   name: string;
   shortName: string;
   description: string;
@@ -13,10 +12,12 @@ export type TopicRecord = {
 export type ProjectInput = Project;
 export type TopicInput = TopicRecord;
 
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 export function validateProjectInput(input: Partial<ProjectInput>) {
   const errors: string[] = [];
   if (!String(input.name || "").trim()) errors.push("Project name is required.");
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(input.slug || ""))) errors.push("Project slug must use lowercase letters, numbers, and hyphens.");
+  if (!SLUG_PATTERN.test(String(input.slug || ""))) errors.push("Project slug must use lowercase letters, numbers, and hyphens.");
   if (!String(input.description || "").trim()) errors.push("Project description is required.");
   return errors;
 }
@@ -24,9 +25,29 @@ export function validateProjectInput(input: Partial<ProjectInput>) {
 export function validateTopicInput(input: Partial<TopicInput>) {
   const errors: string[] = [];
   if (!String(input.name || "").trim()) errors.push("Topic name is required.");
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(input.slug || ""))) errors.push("Topic slug must use lowercase letters, numbers, and hyphens.");
+  if (!SLUG_PATTERN.test(String(input.slug || ""))) errors.push("Topic slug must use lowercase letters, numbers, and hyphens.");
   if (!String(input.description || "").trim()) errors.push("Topic description is required.");
   if (!String(input.shortName || "").trim()) errors.push("Topic short name is required.");
+  return errors;
+}
+
+export function validateProjectCollection(records: ProjectInput[]) {
+  const errors = records.flatMap((record) => validateProjectInput(record));
+  const seen = new Set<string>();
+  for (const record of records) {
+    if (seen.has(record.slug)) errors.push(`Project slug must be unique: ${record.slug}.`);
+    seen.add(record.slug);
+  }
+  return errors;
+}
+
+export function validateTopicCollection(records: TopicInput[]) {
+  const errors = records.flatMap((record) => validateTopicInput(record));
+  const seen = new Set<string>();
+  for (const record of records) {
+    if (seen.has(record.slug)) errors.push(`Topic slug must be unique: ${record.slug}.`);
+    seen.add(record.slug);
+  }
   return errors;
 }
 

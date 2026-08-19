@@ -6,5 +6,5 @@ export default async function AuthorPage({ searchParams }: { searchParams?: Prom
   if (!(await hasAuthorSession())) redirect("/author/login");
   const params = searchParams ? await searchParams : {};
   const contentType = params.type === "projects" || params.type === "topics" ? params.type : "blog";
-  return <AuthorStudio initialContentType={contentType} />;
+  return <AuthorStudio key={contentType} initialContentType={contentType} />;
 }

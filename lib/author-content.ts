@@ -3,7 +3,7 @@ import "server-only";
 import { getGithubFile, githubContentConfigured, writeGithubFile } from "@/lib/github-content";
 import { projects, type Project } from "@/lib/projects";
 import { topicMeta } from "@/lib/topic-data";
-import { serializeProjects, serializeTopics, type TopicInput, validateProjectInput, validateTopicInput } from "@/lib/content-management";
+import { serializeProjects, serializeTopics, type TopicInput, validateProjectCollection, validateTopicCollection } from "@/lib/content-management";
 
 export const PROJECTS_SOURCE_PATH = "lib/projects.ts";
 export const TOPICS_SOURCE_PATH = "lib/topic-data.ts";
@@ -18,20 +18,22 @@ async function sourceSha(path: string) {
 }
 
 export async function saveProjects(next: Project[], expectedSha?: string) {
-  const errors = next.flatMap((item) => validateProjectInput(item));
+  const errors = validateProjectCollection(next);
   if (errors.length) throw new Error(errors[0]);
+  if (!expectedSha) throw new Error("Projects source SHA is required. Reload before saving again.");
   if (!githubContentConfigured()) throw new Error("GitHub publishing is not configured on the server.");
   const sha = await sourceSha(PROJECTS_SOURCE_PATH);
-  if (expectedSha && expectedSha !== sha) throw new Error("Projects changed in GitHub. Reload before saving again.");
+  if (expectedSha !== sha) throw new Error("Projects changed in GitHub. Reload before saving again.");
   return writeGithubFile(PROJECTS_SOURCE_PATH, serializeProjects(next), "chore: update Author Studio projects", sha);
 }
 
 export async function saveTopics(next: TopicInput[], expectedSha?: string) {
-  const errors = next.flatMap((item) => validateTopicInput(item));
+  const errors = validateTopicCollection(next);
   if (errors.length) throw new Error(errors[0]);
+  if (!expectedSha) throw new Error("Topics source SHA is required. Reload before saving again.");
   if (!githubContentConfigured()) throw new Error("GitHub publishing is not configured on the server.");
   const sha = await sourceSha(TOPICS_SOURCE_PATH);
-  if (expectedSha && expectedSha !== sha) throw new Error("Topics changed in GitHub. Reload before saving again.");
+  if (expectedSha !== sha) throw new Error("Topics changed in GitHub. Reload before saving again.");
   return writeGithubFile(TOPICS_SOURCE_PATH, serializeTopics(next), "chore: update Author Studio topics", sha);
 }
 

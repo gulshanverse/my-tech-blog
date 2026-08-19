@@ -389,11 +389,9 @@ test.describe("unified content management", () => {
   });
 
   test.skip(!authenticated, "Set E2E_AUTHOR_USERNAME and E2E_AUTHOR_PASSWORD for authenticated content-type coverage");
-  test("authenticated Author Studio switches between Blog, Projects, and Topics without public overflow", async ({ page }) => {
+  test("authenticated Author Studio switches between Blog, Projects, and Topics without stale state or public overflow", async ({ page }) => {
     await page.goto("/author");
     await expect(page.getByRole("link", { name: "Blog", exact: true }).first()).toHaveAttribute("aria-current", "page");
-    await expect(page.getByRole("link", { name: "Projects", exact: true }).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: "Topics", exact: true }).first()).toBeVisible();
     await page.getByRole("link", { name: "Projects", exact: true }).first().click();
     await expect(page).toHaveURL(/\/author\?type=projects$/);
     await expect(page.getByRole("heading", { name: "Projects", exact: true })).toBeVisible();
@@ -402,10 +400,50 @@ test.describe("unified content management", () => {
     await expect(page).toHaveURL(/\/author\?type=topics$/);
     await expect(page.getByRole("heading", { name: "Topics", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "New topic" })).toBeVisible();
+    await expect(page.getByLabel("Search topics")).toBeVisible();
+    await expect(page.getByLabel("Search projects")).toHaveCount(0);
+    await page.getByRole("link", { name: "Blog", exact: true }).first().click();
+    await expect(page).toHaveURL(/\/author$/);
+    await expect(page.getByRole("heading", { name: "Author Studio", exact: true })).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/author\?type=topics$/);
+    await expect(page.getByRole("heading", { name: "Topics", exact: true })).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/author\?type=projects$/);
+    await expect(page.getByRole("heading", { name: "Projects", exact: true })).toBeVisible();
+    await page.goForward();
+    await expect(page).toHaveURL(/\/author\?type=topics$/);
+    await expect(page.getByRole("heading", { name: "Topics", exact: true })).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "Topics", exact: true })).toBeVisible();
     for (const width of [320, 375, 768, 1024, 1280, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
       expect(await page.evaluate(() => document.body.scrollWidth <= window.innerWidth)).toBe(true);
     }
+  });
+
+  test.skip(!authenticated, "Set E2E_AUTHOR_USERNAME and E2E_AUTHOR_PASSWORD for authenticated create-form coverage");
+  test("Project and Topic creation forms validate and cancel without writing", async ({ page }) => {
+    await page.goto("/author?type=projects");
+    await page.getByRole("button", { name: "New project" }).click();
+    await expect(page.getByText("New project", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Create project" })).toBeVisible();
+    await page.getByLabel("Project name").fill("Invalid project");
+    await page.getByLabel("Slug").fill("Bad Slug");
+    await page.getByRole("button", { name: "Create project" }).click();
+    await expect(page.getByRole("alert")).toContainText(/lowercase letters/i);
+    await page.getByRole("button", { name: "Cancel", exact: true }).first().click();
+    await expect(page.getByRole("button", { name: "Create project" })).toHaveCount(0);
+    await page.getByRole("link", { name: "Topics", exact: true }).first().click();
+    await page.getByRole("button", { name: "New topic" }).click();
+    await expect(page.getByText("New topic", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Create topic" })).toBeVisible();
+    await page.getByLabel("Topic name").fill("Invalid topic");
+    await page.getByLabel("Slug").fill("Bad Slug");
+    await page.getByRole("button", { name: "Create topic" }).click();
+    await expect(page.getByRole("alert")).toContainText(/lowercase letters/i);
+    await page.getByRole("button", { name: "Cancel", exact: true }).first().click();
+    await expect(page.getByRole("button", { name: "Create topic" })).toHaveCount(0);
   });
 });
