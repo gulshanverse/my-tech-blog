@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.11",
+    "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
     "github-slugger": "^2.0.0",
     "gray-matter": "^4.0.3",
